@@ -1,0 +1,43 @@
+﻿
+@{
+    ViewData["Title"] = "Scores";
+}
+@model List<QuanLySinhVien.Models.Student>
+<h1>Student Grades</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>Courses Name</th>
+            <th>Final Score</th>
+            <th>Midterm Score</th>
+            <th>Participant Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.StudentId</td>
+                <td>@student.FullName</td>
+
+                @if (student.Grades != null && student.Grades.Any())
+                {
+                    var grade = student.Grades.First();
+                    <td>@grade.Name</td>
+                    <td>@grade.FinalScore</td>
+                    <td>@grade.MidtermScore</td>
+                    <td>@grade.ParticipantScore</td>
+                }
+                else
+                {
+                    <td>Not available</td>
+                    <td>Not available</td>
+                    <td>Not available</td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
