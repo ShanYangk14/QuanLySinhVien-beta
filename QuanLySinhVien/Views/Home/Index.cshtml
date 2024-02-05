@@ -1,8 +1,22 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row justify-content-md-start">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Welcome
+            </div>
+            <div class="card-body">
+                @if (ViewBag.FullName != null)
+                {
+                    <p>Name: @ViewBag.FullName</p>
+                    <p>Email: @ViewBag.Email</p>
+                    <a href="@Url.Action("Logout", "Home")" class="btn btn-warning">Logout</a>
+                }
+            </div>
+        </div>
+    </div>
 </div>

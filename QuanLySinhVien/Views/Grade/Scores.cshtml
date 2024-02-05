@@ -1,19 +1,18 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Scores";
 }
 @model List<QuanLySinhVien.Models.Student>
 <h1>Student Grades</h1>
-
+<h2>Number of Students: @Model.Count</h2>
 <table>
     <thead>
         <tr>
             <th>Student ID</th>
             <th>Full Name</th>
-            <th>Courses Name</th>
-            <th>Final Score</th>
-            <th>Midterm Score</th>
-            <th>Participant Score</th>
+            <th>Individual Score</th>
+            <th>Team Score</th>
+            <th>Teacher Evaluation</th>
+            <th>Grades</th>
         </tr>
     </thead>
     <tbody>
@@ -23,20 +22,48 @@
                 <td>@student.StudentId</td>
                 <td>@student.FullName</td>
 
-                @if (student.Grades != null && student.Grades.Any())
-                {
-                    var grade = student.Grades.First();
-                    <td>@grade.Name</td>
-                    <td>@grade.FinalScore</td>
-                    <td>@grade.MidtermScore</td>
-                    <td>@grade.ParticipantScore</td>
-                }
-                else
-                {
-                    <td>Not available</td>
-                    <td>Not available</td>
-                    <td>Not available</td>
-                }
+                <td>
+                    @if (student.Individual != null)
+                    {
+                        <p>@student.Individual.grade</p>
+                    }
+                    else
+                    {
+                        <p>Not available</p>
+                    }
+                </td>
+
+                <td>
+                    @if (student.Team != null)
+                    {
+                        <p>@student.Team.TeamEvaluation</p>
+                    }
+                    else
+                    {
+                        <p>Not available</p>
+                    }
+                </td>
+
+                <td>
+                    @if (student.TeacherEvaluation != null)
+                    {
+                        <p>@student.TeacherEvaluation.EvaluationComments</p>
+                    }
+                    else
+                    {
+                        <p>Not available</p>
+                    }
+
+                <td>
+                        @if (student.Grades != null && student.Grades.Any())
+                        {
+                        <p>@student.Grades.First().Score</p>
+                        }
+                        else
+                        {
+                        <p>Not available</p>
+                        }
+                </td>
             </tr>
         }
     </tbody>
