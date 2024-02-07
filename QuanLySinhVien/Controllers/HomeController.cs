@@ -1,9 +1,14 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuanLySinhVien.Data;
 using QuanLySinhVien.Models;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 
 namespace QuanLySinhVien.Controllers
 {
@@ -11,8 +16,6 @@ namespace QuanLySinhVien.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly SchoolDbContext _db;
-
-
         public HomeController(ILogger<HomeController> logger, SchoolDbContext db)
         {
             _logger = logger;
@@ -24,7 +27,28 @@ namespace QuanLySinhVien.Controllers
             return View();
         }
 
-
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "StudentPolicy")]
+        public IActionResult Student()
+        {
+            try
+            {
+                if (User.Identity.IsAuthenticated)
+                {
+                    _logger.LogInformation("User is authenticated. Access granted to Student page. User: {user}", User.Identity.Name);
+                    return View();
+                }
+                else
+                {
+                    _logger.LogWarning("Access to Student page denied. User not authenticated.");
+                    return RedirectToAction("Login");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in the Student action.");
+                return RedirectToAction("Error");
+            }
+        }
         public ActionResult Register()
         {
             return View();
@@ -32,7 +56,7 @@ namespace QuanLySinhVien.Controllers
 
         public ActionResult Login()
         {
-           if (HttpContext.Session.GetString("idUser") != null)
+            if (User.Identity.IsAuthenticated)
             {
                 ViewBag.FullName = HttpContext.Session.GetString("FullName");
                 ViewBag.Email = HttpContext.Session.GetString("Email");
@@ -42,7 +66,6 @@ namespace QuanLySinhVien.Controllers
             {
                 return View();
             }
-
         }
 
 
@@ -71,31 +94,40 @@ namespace QuanLySinhVien.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(string email, string password)
+        public async Task<ActionResult> Login(string email, string password)
         {
             if (ModelState.IsValid)
             {
-                string f_password = GetMD5(password);
-                var data = _db.Users.Where(s => s.Email.Equals(email) && s.Password.Equals(f_password)).ToList();
+                string hashedPassword = GetMD5(password);
+                var user = _db.Users.FirstOrDefault(s => s.Email == email && s.Password == hashedPassword);
 
-                if (data.Count() > 0)
+                if (user != null)
                 {
-                    HttpContext.Session.SetString("FullName", data.FirstOrDefault().FirstName + " " + data.FirstOrDefault().LastName);
-                    HttpContext.Session.SetString("Email", data.FirstOrDefault().Email);
-                    HttpContext.Session.SetInt32("idUser", data.FirstOrDefault().idUser);
-                    return RedirectToAction("Index");
+                    var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+            };
+
+                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var principal = new ClaimsPrincipal(identity);
+
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                    return RedirectToAction(nameof(Student));
                 }
                 else
                 {
                     ViewBag.error = "Login failed";
-                    return RedirectToAction("Login");
+                    return RedirectToAction(nameof(Login));
                 }
             }
+
             return View();
         }
 
-        public ActionResult Logout()
+        public async Task<ActionResult> Logout()
         {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
@@ -114,8 +146,7 @@ namespace QuanLySinhVien.Controllers
             }
             return byte2String;
         }
-
-
+         
         public IActionResult Privacy()
         {
             return View();
