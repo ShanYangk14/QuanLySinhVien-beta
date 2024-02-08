@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -73,13 +73,21 @@ namespace QuanLySinhVien.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(User _user)
         {
+            try
             {
                 var check = _db.Users.FirstOrDefault(s => s.Email == _user.Email);
+
                 if (check == null)
                 {
                     _user.Password = GetMD5(_user.Password);
+
+                   
+                    _user.ResetToken = string.Empty;  
+                    _user.ResetTokenExpiration = DateTime.UtcNow;
+
                     _db.Users.Add(_user);
                     _db.SaveChanges();
+
                     return RedirectToAction("Index");
                 }
                 else
@@ -87,10 +95,13 @@ namespace QuanLySinhVien.Controllers
                     ViewBag.error = "Email already exists";
                     return View();
                 }
-
-
             }
-            return View();
+            catch (Exception ex)
+            {
+                
+                ViewBag.error = "An error occurred during registration.";
+                return View();
+            }
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -146,7 +157,64 @@ namespace QuanLySinhVien.Controllers
             }
             return byte2String;
         }
-         
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user != null)
+            {
+              
+                user.ResetToken = Guid.NewGuid().ToString();
+                user.ResetTokenExpiration = DateTime.UtcNow.AddHours(1); 
+
+                _db.SaveChanges();
+
+                return RedirectToAction("ResetPassword", new { token = user.ResetToken });
+            }
+
+           
+            ViewBag.Error = "Email address not found.";
+            return View("ForgotPassword");
+        }
+
+        public IActionResult ResetPassword(string token)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.ResetToken == token && u.ResetTokenExpiration > DateTime.UtcNow);
+
+            if (user != null)
+            {
+                return View(new ResetPasswordViewModel { Token = token });
+            }
+
+            return RedirectToAction("InvalidToken");
+        }
+        [HttpPost]
+        public IActionResult ResetPassword(ResetPasswordViewModel model)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.ResetToken == model.Token && u.ResetTokenExpiration > DateTime.UtcNow);
+
+            if (user != null)
+            {
+                
+                user.Password = GetMD5(model.NewPassword);
+                user.ResetToken = string.Empty;
+                user.ResetTokenExpiration = DateTime.UtcNow;
+
+                _db.SaveChanges();
+
+                return RedirectToAction("Login");
+            }
+
+            return RedirectToAction("InvalidToken");
+        }
+
         public IActionResult Privacy()
         {
             return View();

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using QuanLySinhVien.Models;
 using System.Security.Cryptography.X509Certificates;
 
@@ -27,7 +29,7 @@ namespace QuanLySinhVien.Data
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.Individual)
                 .WithOne(i => i.Student)
-                 .HasForeignKey<Individual>(i => i.StudentId);
+                .HasForeignKey<Individual>(i => i.StudentId);
 
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.Team)
@@ -45,8 +47,8 @@ namespace QuanLySinhVien.Data
                 .HasForeignKey<TeacherEvaluation>(te => te.StudentId);
 
             modelBuilder.Entity<Grade>()
-               .Property(g => g.MaxScore)
-               .HasDefaultValue(10);
+                .Property(g => g.MaxScore)
+                .HasDefaultValue(10);
 
             base.OnModelCreating(modelBuilder);
         }

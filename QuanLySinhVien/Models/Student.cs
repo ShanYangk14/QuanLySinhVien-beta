@@ -59,8 +59,4 @@ namespace QuanLySinhVien.Models
         public int MaxScore { get; set; } = 10;
         public Student Student { get; set; }
     }
-
-
-
-
 }

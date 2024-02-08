@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 namespace QuanLySinhVien.Models
 {
-    public class User 
+    public class User
     {
         [Key, Column(Order = 1)]
         [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
@@ -13,6 +14,7 @@ namespace QuanLySinhVien.Models
         [Required]
         [StringLength(50, MinimumLength = 3)]
         public string LastName { get; set; }
+
         [Required]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}")]
         public string Email { get; set; }
@@ -30,6 +32,8 @@ namespace QuanLySinhVien.Models
         {
             return this.FirstName + " " + this.LastName;
         }
+        public string ResetToken { get; set; }
+        public DateTime? ResetTokenExpiration { get; set; }
 
     }
 }
