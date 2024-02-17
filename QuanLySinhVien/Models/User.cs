@@ -37,6 +37,6 @@ namespace QuanLySinhVien.Models
 
         public string ResetToken { get; set; }
         public DateTime? ResetTokenExpiration { get; set; }
-
+        public bool IsAdmin { get; set; }
     }
 }

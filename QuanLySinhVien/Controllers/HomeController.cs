@@ -83,11 +83,9 @@ namespace QuanLySinhVien.Controllers
                 {
                     _user.Password = GetMD5(_user.Password);
 
-
                     _user.ResetToken = string.Empty;
                     _user.ResetTokenExpiration = DateTime.UtcNow;
 
-                    _db.Users.Add(_user);
                     _db.SaveChanges();
 
                     var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
@@ -95,7 +93,15 @@ namespace QuanLySinhVien.Controllers
 
                     if (result.Succeeded)
                     {
-                        await _userManager.AddToRoleAsync(user, "Admin");
+                   
+                        if (_user.IsAdmin)
+                        {
+                            await _userManager.AddToRoleAsync(user, "Admin");
+                        }
+                        else
+                        {
+                            await _userManager.AddToRoleAsync(user, "Student");
+                        }
                     }
 
                     return RedirectToAction("Index");
@@ -108,11 +114,11 @@ namespace QuanLySinhVien.Controllers
             }
             catch (Exception ex)
             {
-
                 ViewBag.error = "An error occurred during registration.";
                 return View();
             }
         }
+
 
 
         [HttpPost]
@@ -131,13 +137,14 @@ namespace QuanLySinhVien.Controllers
                         new Claim(ClaimTypes.Name, user.Email),
                     };
 
-                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    if (await _userManager.IsInRoleAsync(user, "Admin") || user.IsAdmin)
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "Admin"));
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                         var principal = new ClaimsPrincipal(identity);
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+                        Console.WriteLine("User is an Admin. Redirecting to Admin page.");
                         return RedirectToAction(nameof(Admin)); 
                     }
                     else
@@ -147,6 +154,7 @@ namespace QuanLySinhVien.Controllers
                         var principal = new ClaimsPrincipal(identity);
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+                        Console.WriteLine("User is an Student. Redirecting to Student page.");
                         return RedirectToAction(nameof(Student));
                     }
                 }
@@ -256,7 +264,7 @@ namespace QuanLySinhVien.Controllers
 
         }
 
-        [Authorize(Roles = "Admin")]
+        [CustomAuthorize(Roles = "Admin")]
         public IActionResult Admin()
         {
             var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
