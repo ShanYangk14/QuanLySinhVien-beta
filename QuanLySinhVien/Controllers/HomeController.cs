@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using QuanLySinhVien.Attributes;
 
 namespace QuanLySinhVien.Controllers
 {
@@ -16,10 +17,12 @@ namespace QuanLySinhVien.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly SchoolDbContext _db;
-        public HomeController(ILogger<HomeController> logger, SchoolDbContext db)
+        private readonly UserManager<User> _userManager;
+        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager)
         {
             _logger = logger;
             _db = db;
+            _userManager = userManager;
         }
 
         public ActionResult Index()
@@ -60,7 +63,7 @@ namespace QuanLySinhVien.Controllers
             {
                 ViewBag.FullName = HttpContext.Session.GetString("FullName");
                 ViewBag.Email = HttpContext.Session.GetString("Email");
-                return View();
+                return View("Index");
             }
             else
             {
@@ -68,10 +71,9 @@ namespace QuanLySinhVien.Controllers
             }
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Register(User _user)
+        public async Task<ActionResult> RegisterAsync(User _user)
         {
             try
             {
@@ -81,12 +83,20 @@ namespace QuanLySinhVien.Controllers
                 {
                     _user.Password = GetMD5(_user.Password);
 
-                   
-                    _user.ResetToken = string.Empty;  
+
+                    _user.ResetToken = string.Empty;
                     _user.ResetTokenExpiration = DateTime.UtcNow;
 
                     _db.Users.Add(_user);
                     _db.SaveChanges();
+
+                    var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
+                    var result = await _userManager.CreateAsync(user, _user.Password);
+
+                    if (result.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(user, "Admin");
+                    }
 
                     return RedirectToAction("Index");
                 }
@@ -98,11 +108,13 @@ namespace QuanLySinhVien.Controllers
             }
             catch (Exception ex)
             {
-                
+
                 ViewBag.error = "An error occurred during registration.";
                 return View();
             }
         }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(string email, string password)
@@ -115,16 +127,28 @@ namespace QuanLySinhVien.Controllers
                 if (user != null)
                 {
                     var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Email),
-            };
+                    {
+                        new Claim(ClaimTypes.Name, user.Email),
+                    };
 
-                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var principal = new ClaimsPrincipal(identity);
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        var principal = new ClaimsPrincipal(identity);
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                        return RedirectToAction(nameof(Admin)); 
+                    }
+                    else
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, "Student"));
+                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        var principal = new ClaimsPrincipal(identity);
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                    return RedirectToAction(nameof(Student));
+                        return RedirectToAction(nameof(Student));
+                    }
                 }
                 else
                 {
@@ -136,11 +160,13 @@ namespace QuanLySinhVien.Controllers
             return View();
         }
 
+
+
         public async Task<ActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+            return RedirectToAction("Index");
         }
 
         public static string GetMD5(string str)
@@ -215,6 +241,60 @@ namespace QuanLySinhVien.Controllers
             return RedirectToAction("InvalidToken");
         }
 
+        public async Task<IActionResult> ManageUsers()
+        {
+           var currentUser = await _userManager.GetUserAsync(User);
+            if (await _userManager.IsInRoleAsync(currentUser, "Admin"))
+            {
+                var users = _db.Users.ToList();
+                return View(users);
+            }
+            else
+            {
+                return RedirectToAction("AccessDenied");
+            }
+
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Admin()
+        {
+            var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            Console.WriteLine("User Roles: " + string.Join(", ", roles));
+
+            if (User.Identity.IsAuthenticated)
+            {
+                Console.WriteLine("User is authenticated.");
+            }
+            else
+            {
+                Console.WriteLine("User is NOT authenticated.");
+            }
+            Console.WriteLine("Reached Admin action.");
+            return View();
+        }
+
+        public IActionResult DisplayRoles()
+        {
+            var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            return Content("Roles: " + string.Join(", ", roles));
+        }
+
+        public IActionResult AccessDenied()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+               
+                return View("AccessDenied");
+            }
+            else
+            {
+                
+                return RedirectToAction("Login");
+            }
+        }
+
+       
         public IActionResult Privacy()
         {
             return View();

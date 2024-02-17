@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace QuanLySinhVien.Data
 {
-    public class SchoolDbContext : DbContext
+    public class SchoolDbContext : IdentityDbContext<User>
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Student> Students { get; set; }

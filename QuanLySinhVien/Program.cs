@@ -20,6 +20,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<SchoolDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddIdentity<User, IdentityRole>()
+       .AddEntityFrameworkStores<SchoolDbContext>()
+       .AddDefaultTokenProviders();
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -33,14 +37,51 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireAuthenticatedUser();
     });
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+
 });
+
+using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var userManager = services.GetRequiredService<UserManager<User>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        var adminRoleExists = await roleManager.RoleExistsAsync("Admin");
+        Console.WriteLine("Admin Role Exists: " + adminRoleExists);
+        if (!adminRoleExists)
+        {
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+
+        var adminUser = await userManager.FindByEmailAsync("nguyenminhquank14@siu.edu.vn");
+        if (adminUser == null)
+        {
+            adminUser = new User
+            {
+                UserName = "Nguyen Minh Quan",
+                Email = "nguyenminhquank14@siu.edu.vn",
+                PasswordHash = userManager.PasswordHasher.HashPassword(adminUser, "ilovefemboy")
+            };
+            await userManager.CreateAsync(adminUser, "ilovefemboy");
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.Cookie.HttpOnly = true;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-        options.LoginPath = "/Home/Login";  // Verify this path
+        options.LoginPath = "/Home/Login";
         options.AccessDeniedPath = "/Home/AccessDenied";
         options.SlidingExpiration = true;
     });
@@ -66,5 +107,9 @@ app.UseSession();
 app.MapControllerRoute(
     name: "Home",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(
+   name: "Admin",
+    pattern: "Admin/{action=Index}/{id?}",
+    defaults: new { controller = "Home" });
 
 app.Run();

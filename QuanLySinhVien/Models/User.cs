@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+
 namespace QuanLySinhVien.Models
 {
-    public class User
+    public class User : IdentityUser
     {
         [Key, Column(Order = 1)]
         [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
@@ -32,6 +34,7 @@ namespace QuanLySinhVien.Models
         {
             return this.FirstName + " " + this.LastName;
         }
+
         public string ResetToken { get; set; }
         public DateTime? ResetTokenExpiration { get; set; }
 
