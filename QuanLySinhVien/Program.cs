@@ -33,10 +33,7 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("StudentPolicy", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-    });
+    options.AddPolicy("StudentPolicy", policy => policy.RequireAuthenticatedUser());
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
 
 });
@@ -63,7 +60,6 @@ using (var scope = builder.Services.BuildServiceProvider().CreateScope())
             {
                 UserName = "Nguyen Minh Quan",
                 Email = "nguyenminhquank14@siu.edu.vn",
-                PasswordHash = userManager.PasswordHasher.HashPassword(adminUser, "ilovefemboy")
             };
             await userManager.CreateAsync(adminUser, "ilovefemboy");
             await userManager.AddToRoleAsync(adminUser, "Admin");
@@ -105,10 +101,16 @@ app.UseAuthorization();
 app.UseSession();
 
 app.MapControllerRoute(
+        name: "AdminLogin",
+        pattern: "Admin/Login",
+        defaults: new { controller = "Home", action = "AdminLogin" });
+
+app.MapControllerRoute(
     name: "Home",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
-   name: "Admin",
+    name: "Admin",
     pattern: "Admin/{action=Index}/{id?}",
     defaults: new { controller = "Home" });
 

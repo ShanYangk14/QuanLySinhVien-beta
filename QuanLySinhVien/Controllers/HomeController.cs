@@ -18,11 +18,13 @@ namespace QuanLySinhVien.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly SchoolDbContext _db;
         private readonly UserManager<User> _userManager;
-        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager)
+        private readonly SignInManager<User> _signInManager;
+        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _logger = logger;
             _db = db;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public ActionResult Index()
@@ -35,7 +37,8 @@ namespace QuanLySinhVien.Controllers
         {
             try
             {
-                if (User.Identity.IsAuthenticated)
+                var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+                if (roles.Contains("Student"))
                 {
                     _logger.LogInformation("User is authenticated. Access granted to Student page. User: {user}", User.Identity.Name);
                     return View();
@@ -70,7 +73,6 @@ namespace QuanLySinhVien.Controllers
                 return View();
             }
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RegisterAsync(User _user)
@@ -83,9 +85,11 @@ namespace QuanLySinhVien.Controllers
                 {
                     _user.Password = GetMD5(_user.Password);
 
+
                     _user.ResetToken = string.Empty;
                     _user.ResetTokenExpiration = DateTime.UtcNow;
 
+                    _db.Users.Add(_user);
                     _db.SaveChanges();
 
                     var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
@@ -93,15 +97,7 @@ namespace QuanLySinhVien.Controllers
 
                     if (result.Succeeded)
                     {
-                   
-                        if (_user.IsAdmin)
-                        {
-                            await _userManager.AddToRoleAsync(user, "Admin");
-                        }
-                        else
-                        {
-                            await _userManager.AddToRoleAsync(user, "Student");
-                        }
+                        await _userManager.AddToRoleAsync(user, "Admin");
                     }
 
                     return RedirectToAction("Index");
@@ -114,12 +110,11 @@ namespace QuanLySinhVien.Controllers
             }
             catch (Exception ex)
             {
+
                 ViewBag.error = "An error occurred during registration.";
                 return View();
             }
         }
-
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -137,15 +132,14 @@ namespace QuanLySinhVien.Controllers
                         new Claim(ClaimTypes.Name, user.Email),
                     };
 
-                    if (await _userManager.IsInRoleAsync(user, "Admin") || user.IsAdmin)
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "Admin"));
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                         var principal = new ClaimsPrincipal(identity);
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                        Console.WriteLine("User is an Admin. Redirecting to Admin page.");
-                        return RedirectToAction(nameof(Admin)); 
+                        return RedirectToAction(nameof(Admin));
                     }
                     else
                     {
@@ -154,7 +148,6 @@ namespace QuanLySinhVien.Controllers
                         var principal = new ClaimsPrincipal(identity);
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                        Console.WriteLine("User is an Student. Redirecting to Student page.");
                         return RedirectToAction(nameof(Student));
                     }
                 }
@@ -169,6 +162,47 @@ namespace QuanLySinhVien.Controllers
         }
 
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AdminLogin(string email, string password)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user != null && (await _userManager.IsInRoleAsync(user, "Admin") || user.IsAdmin))
+                {
+                    var result = await _signInManager.PasswordSignInAsync(user, password, false, lockoutOnFailure: false);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction(nameof(Admin));
+                    }
+                    else
+                    {
+                        ViewBag.error = "Admin login failed";
+                        return View(nameof(AccessDenied));
+                    }
+                }
+                else
+                {
+                    ViewBag.error = "Admin login failed";
+                    return View(nameof(Login));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in the AdminLogin action.");
+                return RedirectToAction("Error");
+            }
+        }
+
+
+
+        public IActionResult AdminLogin()
+        {
+            return View();
+        }
 
         public async Task<ActionResult> Logout()
         {
@@ -204,16 +238,16 @@ namespace QuanLySinhVien.Controllers
 
             if (user != null)
             {
-              
+
                 user.ResetToken = Guid.NewGuid().ToString();
-                user.ResetTokenExpiration = DateTime.UtcNow.AddHours(1); 
+                user.ResetTokenExpiration = DateTime.UtcNow.AddHours(1);
 
                 _db.SaveChanges();
 
                 return RedirectToAction("ResetPassword", new { token = user.ResetToken });
             }
 
-           
+
             ViewBag.Error = "Email address not found.";
             return View("ForgotPassword");
         }
@@ -236,7 +270,7 @@ namespace QuanLySinhVien.Controllers
 
             if (user != null)
             {
-                
+
                 user.Password = GetMD5(model.NewPassword);
                 user.ResetToken = string.Empty;
                 user.ResetTokenExpiration = DateTime.UtcNow;
@@ -251,7 +285,7 @@ namespace QuanLySinhVien.Controllers
 
         public async Task<IActionResult> ManageUsers()
         {
-           var currentUser = await _userManager.GetUserAsync(User);
+            var currentUser = await _userManager.GetUserAsync(User);
             if (await _userManager.IsInRoleAsync(currentUser, "Admin"))
             {
                 var users = _db.Users.ToList();
@@ -264,7 +298,7 @@ namespace QuanLySinhVien.Controllers
 
         }
 
-        [CustomAuthorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
         public IActionResult Admin()
         {
             var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
@@ -281,6 +315,7 @@ namespace QuanLySinhVien.Controllers
             Console.WriteLine("Reached Admin action.");
             return View();
         }
+
 
         public IActionResult DisplayRoles()
         {
