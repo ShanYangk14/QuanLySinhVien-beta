@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using QuanLySinhVien.Attributes;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace QuanLySinhVien.Controllers
 {
@@ -19,6 +20,7 @@ namespace QuanLySinhVien.Controllers
         private readonly SchoolDbContext _db;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+
         public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _logger = logger;
@@ -88,6 +90,7 @@ namespace QuanLySinhVien.Controllers
 
                     _user.ResetToken = string.Empty;
                     _user.ResetTokenExpiration = DateTime.UtcNow;
+                    _user.EmailConfirmationToken = Guid.NewGuid().ToString();
 
                     _db.Users.Add(_user);
                     _db.SaveChanges();
@@ -95,6 +98,7 @@ namespace QuanLySinhVien.Controllers
                     var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
                     var result = await _userManager.CreateAsync(user, _user.Password);
 
+                 
                     if (result.Succeeded)
                     {
                         await _userManager.AddToRoleAsync(user, "Admin");
@@ -158,6 +162,29 @@ namespace QuanLySinhVien.Controllers
                 }
             }
 
+            return View();
+        }
+
+        public IActionResult ConfirmEmail(string email, string token)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.Email == email && u.EmailConfirmationToken == token);
+
+            if (user != null)
+            {
+              
+                user.EmailConfirmed = true;
+                user.EmailConfirmationToken = null; 
+                _db.SaveChanges();
+
+                return RedirectToAction("EmailConfirmed");
+            }
+
+            return RedirectToAction("InvalidToken");
+        }
+
+        public IActionResult InvalidToken()
+        {
+           
             return View();
         }
 
