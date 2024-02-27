@@ -11,6 +11,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using QuanLySinhVien.Attributes;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Net.Mail;
 
 namespace QuanLySinhVien.Controllers
 {
@@ -165,22 +166,6 @@ namespace QuanLySinhVien.Controllers
             return View();
         }
 
-        public IActionResult ConfirmEmail(string email, string token)
-        {
-            var user = _db.Users.FirstOrDefault(u => u.Email == email && u.EmailConfirmationToken == token);
-
-            if (user != null)
-            {
-              
-                user.EmailConfirmed = true;
-                user.EmailConfirmationToken = null; 
-                _db.SaveChanges();
-
-                return RedirectToAction("EmailConfirmed");
-            }
-
-            return RedirectToAction("InvalidToken");
-        }
 
         public IActionResult InvalidToken()
         {
@@ -252,6 +237,7 @@ namespace QuanLySinhVien.Controllers
             }
             return byte2String;
         }
+
         public IActionResult ForgotPassword()
         {
             return View();
@@ -265,7 +251,6 @@ namespace QuanLySinhVien.Controllers
 
             if (user != null)
             {
-
                 user.ResetToken = Guid.NewGuid().ToString();
                 user.ResetTokenExpiration = DateTime.UtcNow.AddHours(1);
 
@@ -274,10 +259,10 @@ namespace QuanLySinhVien.Controllers
                 return RedirectToAction("ResetPassword", new { token = user.ResetToken });
             }
 
-
             ViewBag.Error = "Email address not found.";
             return View("ForgotPassword");
         }
+
 
         public IActionResult ResetPassword(string token)
         {
@@ -299,6 +284,7 @@ namespace QuanLySinhVien.Controllers
             {
 
                 user.Password = GetMD5(model.NewPassword);
+                user.ConfirmPassword = GetMD5(model.NewPassword);
                 user.ResetToken = string.Empty;
                 user.ResetTokenExpiration = DateTime.UtcNow;
 
