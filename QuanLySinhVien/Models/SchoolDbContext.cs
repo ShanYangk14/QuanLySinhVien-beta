@@ -9,48 +9,64 @@ namespace QuanLySinhVien.Data
     public class SchoolDbContext : IdentityDbContext<User>
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Student> Students { get; set; }
-        public DbSet<Individual> individuals { get; set; }
-        public DbSet<Team> Teams { get; set; }
-        public DbSet<TeacherEvaluation> Teachers { get; set; }
-        public DbSet<Grade> Grades { get; set; }
-        
+        public DbSet<Review> Reviews { get; set; }
+
         public SchoolDbContext(DbContextOptions<SchoolDbContext> options) : base(options)
         {
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().ToTable("Users");
-            modelBuilder.Entity<Student>().ToTable("Students");
-            modelBuilder.Entity<TeacherEvaluation>().ToTable("TeacherEvaluations");
-            modelBuilder.Entity<Team>().ToTable("Teams");
-            modelBuilder.Entity<Grade>().ToTable("Grades");
-
-            modelBuilder.Entity<Student>()
-                .HasOne(s => s.Individual)
-                .WithOne(i => i.Student)
-                .HasForeignKey<Individual>(i => i.StudentId);
-
-            modelBuilder.Entity<Student>()
-                .HasOne(s => s.Team)
-                .WithOne(t => t.Student)
-                .HasForeignKey<Team>(t => t.StudentId);
-
-            modelBuilder.Entity<Student>()
-                .HasMany(s => s.Grades)
-                .WithOne(g => g.Student)
-                .HasForeignKey(g => g.StudentId);
-
-            modelBuilder.Entity<Student>()
-                .HasOne(s => s.TeacherEvaluation)
-                .WithOne(te => te.Student)
-                .HasForeignKey<TeacherEvaluation>(te => te.StudentId);
-
-            modelBuilder.Entity<Grade>()
-                .Property(g => g.MaxScore)
-                .HasDefaultValue(10);
-
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Student>()
+                .HasKey(s => s.MSSV);
+
+            modelBuilder.Entity<Teacher>()
+                .HasKey(t => t.MSGV);
+
+            modelBuilder.Entity<Review>()
+                .HasKey(r => r.Id);
+
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Id);
+            modelBuilder.Entity<Manager>()
+                .HasKey(m => m.AdminId);
+
+            modelBuilder.Entity<Teacher>()
+                .HasMany(t => t.Students)
+                .WithOne(s => s.Teacher)
+                .HasForeignKey(s => s.MSGV)
+                .OnDelete(DeleteBehavior.NoAction); 
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Student)
+                .WithMany(s => s.Reviews)
+                .HasForeignKey(r => r.MSSV);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Teacher)
+                .WithMany(t => t.Reviews)
+                .HasForeignKey(r => r.MSGV);
+
+            modelBuilder.Entity<User>()
+                 .HasOne(u => u.Student)  
+                 .WithMany(s => s.Users)
+                 .HasForeignKey(u => u.idUser)
+                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Teacher)  
+                .WithMany(t => t.Users)
+                .HasForeignKey(u => u.idUser)
+                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Manager)
+                .WithMany(t => t.Users)
+                .HasForeignKey(u => u.idUser)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
-}
+    }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol;
 using QuanLySinhVien.Data;
 using QuanLySinhVien.Models;
 using System.Threading.Tasks;
@@ -14,18 +15,29 @@ namespace QuanLySinhVien.Controllers
         {
             _context = context;
         }
-        public async Task<IActionResult> Scores()
+        public async Task<IActionResult> ScoreReview()
         {
             var students = await _context.Students
-                .Include(s => s.Individual)
-                .Include(s => s.Team)
-                .Include(s => s.TeacherEvaluation)
-                .Include(s => s.Grades) 
+                .Include(s => s.MSSV)
+                .Include(s => s.Reviews)
+                .Include(s => s.Users)
+                .Include(s => s.GvDanhGia)
                 .ToListAsync();
 
-            Console.WriteLine($"Number of students: {students.Count}");
+            Console.WriteLine($"Access students Score Review");
+            return View();
+        }
+        public async Task<IActionResult> StudentAssessment() 
+        {
+            var teacher = await _context.Teachers
+                .Include(t => t.MSGV)
+                .Include(t => t.Reviews)
+                .Include(t => t.Users)
+                .Include(t => t.GvDanhGia)
+                .ToListAsync();
 
-            return View("Scores", students);
+            Console.WriteLine($"Access of students assessment");
+            return View();
         }
     }
 }

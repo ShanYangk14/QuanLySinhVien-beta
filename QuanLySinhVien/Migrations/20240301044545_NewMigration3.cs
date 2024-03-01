@@ -5,25 +5,25 @@
 namespace QuanLySinhVien.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIsAdminToUser : Migration
+    public partial class NewMigration3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsAdmin",
-                table: "AspNetUsers",
-                type: "bit",
+            migrationBuilder.AddColumn<string>(
+                name: "TenSv",
+                table: "Teachers",
+                type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsAdmin",
-                table: "AspNetUsers");
+                name: "TenSv",
+                table: "Teachers");
         }
     }
 }

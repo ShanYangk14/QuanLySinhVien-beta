@@ -38,12 +38,10 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("StudentPolicy", policy => policy.RequireAuthenticatedUser());
-    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
-
-});
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("StudentPolicy", policy => policy.RequireAuthenticatedUser())
+    .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
+    .AddPolicy("TeacherPolicy", policy => policy.RequireRole("Teacher"));
 
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {

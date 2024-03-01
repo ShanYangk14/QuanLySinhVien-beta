@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using QuanLySinhVien.Attributes;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net.Mail;
+using Microsoft.EntityFrameworkCore;
 
 namespace QuanLySinhVien.Controllers
 {
@@ -21,13 +22,15 @@ namespace QuanLySinhVien.Controllers
         private readonly SchoolDbContext _db;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly SchoolDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager, SignInManager<User> signInManager)
+        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager, SignInManager<User> signInManager, SchoolDbContext context)
         {
             _logger = logger;
             _db = db;
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
         public ActionResult Index()
@@ -58,6 +61,31 @@ namespace QuanLySinhVien.Controllers
                 return RedirectToAction("Error");
             }
         }
+
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "TeacherPolicy")]
+        public IActionResult Teacher()
+        {
+            try
+            {
+                var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+                if (roles.Contains("Teacher"))
+                {
+                    _logger.LogInformation("User is authenticated. Access granted to Teacher page. User: {user}", User.Identity.Name);
+                    return View();
+                }
+                else
+                {
+                    _logger.LogWarning("Access to Teacher page denied. User not authenticated.");
+                    return RedirectToAction("Login");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in the Student action.");
+                return RedirectToAction("Error");
+            }
+        }
+
         public ActionResult Register()
         {
             return View();
@@ -128,14 +156,14 @@ namespace QuanLySinhVien.Controllers
             if (ModelState.IsValid)
             {
                 string hashedPassword = GetMD5(password);
-                var user = _db.Users.FirstOrDefault(s => s.Email == email && s.Password == hashedPassword);
+                var user = await _db.Users.FirstOrDefaultAsync(s => s.Email == email && s.Password == hashedPassword);
 
                 if (user != null)
                 {
                     var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.Email),
-                    };
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+            };
 
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
@@ -146,7 +174,16 @@ namespace QuanLySinhVien.Controllers
 
                         return RedirectToAction(nameof(Admin));
                     }
-                    else
+                    else if (await _userManager.IsInRoleAsync(user, "Teacher"))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, "Teacher"));
+                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        var principal = new ClaimsPrincipal(identity);
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                        return RedirectToAction(nameof(Teacher));
+                    }
+                    else if (await _userManager.IsInRoleAsync(user, "Student"))
                     {
                         claims.Add(new Claim(ClaimTypes.Role, "Student"));
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -165,6 +202,7 @@ namespace QuanLySinhVien.Controllers
 
             return View();
         }
+
 
 
         public IActionResult InvalidToken()
@@ -312,13 +350,16 @@ namespace QuanLySinhVien.Controllers
         }
 
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
-        public IActionResult Admin()
+        public async Task<IActionResult> Admin()
         {
             var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
             Console.WriteLine("User Roles: " + string.Join(", ", roles));
 
             if (User.Identity.IsAuthenticated)
             {
+
+                var students = _context.Students.ToList();
+                var teachers = _context.Teachers.ToList();
                 Console.WriteLine("User is authenticated.");
             }
             else

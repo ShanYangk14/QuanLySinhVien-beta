@@ -19,7 +19,7 @@ namespace QuanLySinhVien.Models
 
         [Required]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}")]
-        public string Email { get; set; }
+        public new string Email { get; set; }
 
         [Required]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,15}$")]
@@ -37,6 +37,10 @@ namespace QuanLySinhVien.Models
         public string ResetToken { get; set; }
         public DateTime? ResetTokenExpiration { get; set; }
         public bool IsAdmin { get; set; }
+        public bool IsTeacher { get; set; }
         public string EmailConfirmationToken { get; set; }
+        public Teacher Teacher { get; set; }
+        public Student Student { get; set; }
+        public Manager Manager { get; set; }
     }
 }

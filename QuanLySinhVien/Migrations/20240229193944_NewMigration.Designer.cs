@@ -12,8 +12,8 @@ using QuanLySinhVien.Data;
 namespace QuanLySinhVien.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    [Migration("20240222102110_AddEmailConfirmationToken")]
-    partial class AddEmailConfirmationToken
+    [Migration("20240229193944_NewMigration")]
+    partial class NewMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,169 +158,87 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Grade", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
                 {
-                    b.Property<int>("GradeId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GradeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MSGV")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MSSV")
+                        .HasColumnType("int");
 
                     b.Property<int>("MaxScore")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(10);
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayDanhGia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NoiDungDanhGia")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
 
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GradeId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("Grades", (string)null);
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.Individual", b =>
-                {
-                    b.Property<int>("IndividualId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IndividualId"));
-
-                    b.Property<string>("Achievements")
+                    b.Property<string>("XepLoai")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("CitizenshipInCommunity")
-                        .HasColumnType("bit");
+                    b.HasKey("Id");
 
-                    b.Property<bool>("ComplianceWithSchoolRules")
-                        .HasColumnType("bit");
+                    b.HasIndex("MSGV");
 
-                    b.Property<int>("GradeId")
-                        .HasColumnType("int");
+                    b.HasIndex("MSSV");
 
-                    b.Property<bool>("ParticipationInOrganizations")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ParticipationInSocialActivities")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ParticipationInStudy")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("IndividualId");
-
-                    b.HasIndex("GradeId");
-
-                    b.HasIndex("StudentId")
-                        .IsUnique();
-
-                    b.ToTable("individuals");
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
                 {
-                    b.Property<int>("StudentId")
+                    b.Property<int>("MSSV")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MSSV"));
 
-                    b.Property<string>("Email")
+                    b.Property<string>("GvDanhGia")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("MSGV")
+                        .HasColumnType("int");
 
-                    b.HasKey("StudentId");
+                    b.HasKey("MSSV");
 
-                    b.ToTable("Students", (string)null);
+                    b.HasIndex("MSGV");
+
+                    b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.TeacherEvaluation", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
                 {
-                    b.Property<int>("TeacherEvaluationId")
+                    b.Property<int>("MSGV")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeacherEvaluationId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MSGV"));
 
-                    b.Property<string>("EvaluationComments")
+                    b.Property<string>("GvDanhGia")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GradeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("TeacherEvaluationId");
-
-                    b.HasIndex("GradeId");
-
-                    b.HasIndex("StudentId")
-                        .IsUnique();
-
-                    b.ToTable("TeacherEvaluations", (string)null);
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.Team", b =>
-                {
-                    b.Property<int>("TeamId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeamId"));
-
-                    b.Property<string>("Achievements")
+                    b.Property<string>("NoiDungDanhGia")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("CitizenshipInCommunity")
-                        .HasColumnType("bit");
+                    b.HasKey("MSGV");
 
-                    b.Property<bool>("ComplianceWithSchoolRules")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("GradeId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("ParticipationInOrganizations")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ParticipationInSocialActivities")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ParticipationInStudy")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TeamEvaluation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("TeamId");
-
-                    b.HasIndex("GradeId");
-
-                    b.HasIndex("StudentId")
-                        .IsUnique();
-
-                    b.ToTable("Teams", (string)null);
+                    b.ToTable("Teachers");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
@@ -353,6 +271,9 @@ namespace QuanLySinhVien.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsTeacher")
                         .HasColumnType("bit");
 
                     b.Property<string>("LastName")
@@ -409,8 +330,6 @@ namespace QuanLySinhVien.Migrations
                         .HasColumnType("int")
                         .HasColumnOrder(1);
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idUser"));
-
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -420,6 +339,8 @@ namespace QuanLySinhVien.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("idUser");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -475,86 +396,69 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Grade", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
                 {
-                    b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithMany("Grades")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.Individual", b =>
-                {
-                    b.HasOne("QuanLySinhVien.Models.Grade", "grade")
-                        .WithMany()
-                        .HasForeignKey("GradeId")
+                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
+                        .WithMany("Reviews")
+                        .HasForeignKey("MSGV")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithOne("Individual")
-                        .HasForeignKey("QuanLySinhVien.Models.Individual", "StudentId")
+                        .WithMany("Reviews")
+                        .HasForeignKey("MSSV")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Student");
 
-                    b.Navigation("grade");
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.TeacherEvaluation", b =>
-                {
-                    b.HasOne("QuanLySinhVien.Models.Grade", "grade")
-                        .WithMany()
-                        .HasForeignKey("GradeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithOne("TeacherEvaluation")
-                        .HasForeignKey("QuanLySinhVien.Models.TeacherEvaluation", "StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-
-                    b.Navigation("grade");
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.Team", b =>
-                {
-                    b.HasOne("QuanLySinhVien.Models.Grade", "grade")
-                        .WithMany()
-                        .HasForeignKey("GradeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithOne("Team")
-                        .HasForeignKey("QuanLySinhVien.Models.Team", "StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-
-                    b.Navigation("grade");
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
                 {
-                    b.Navigation("Grades");
-
-                    b.Navigation("Individual")
+                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
+                        .WithMany("Students")
+                        .HasForeignKey("MSGV")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("TeacherEvaluation")
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
+                        .WithMany("Users")
+                        .HasForeignKey("idUser")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Team")
+                    b.HasOne("QuanLySinhVien.Models.Student", "Student")
+                        .WithMany("Users")
+                        .HasForeignKey("idUser")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
+                {
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
+                {
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Students");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }
