@@ -15,7 +15,6 @@ namespace QuanLySinhVien.Models
         public string XepLoai { get; set; }
         public ICollection<Student> Students { get; set; }
         public ICollection<Review> Reviews { get; set; }
-        public ICollection<User> Users { get; set; }
     }
 
     public class Student
@@ -23,11 +22,9 @@ namespace QuanLySinhVien.Models
         [Key]
         public int MSSV { get; set; }
         public string GvDanhGia { get; set; }
-
         public int MSGV { get; set; }
         public Teacher Teacher { get; set; }
         public ICollection<Review> Reviews { get; set; }
-        public ICollection<User> Users { get; set; }
     }
 
     public class Review
@@ -46,12 +43,11 @@ namespace QuanLySinhVien.Models
     {
         [Key]
         public int AdminId { get; set; }
-        public int MSSV { get; set; }
-        public int MSGV { get; set; }
+        public int? MSSV { get; set; }
+        public int? MSGV { get; set; }
         public Teacher Teacher { get; set;  }
         public Student Student { get; set; }
         public ICollection<Review> Reviews { get; set; }
-        public ICollection<User> Users { get; set; }
 
     }
 }

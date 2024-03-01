@@ -17,56 +17,36 @@ namespace QuanLySinhVien.Data
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Student>()
-                .HasKey(s => s.MSSV);
+			modelBuilder.Entity<User>().ToTable("users");
+			modelBuilder.Entity<Student>().ToTable("students");
+			modelBuilder.Entity<Teacher>().ToTable("teacher");
+			modelBuilder.Entity<Review>().ToTable("review");
 
-            modelBuilder.Entity<Teacher>()
-                .HasKey(t => t.MSGV);
+			modelBuilder.Entity<Student>()
+				.HasKey(s => s.MSSV);
 
-            modelBuilder.Entity<Review>()
-                .HasKey(r => r.Id);
+			modelBuilder.Entity<Teacher>()
+				.HasKey(t => t.MSGV);
 
-            modelBuilder.Entity<User>()
-                .HasKey(u => u.Id);
-            modelBuilder.Entity<Manager>()
-                .HasKey(m => m.AdminId);
+			modelBuilder.Entity<Review>()
+				.HasKey(r => r.Id);
 
-            modelBuilder.Entity<Teacher>()
-                .HasMany(t => t.Students)
-                .WithOne(s => s.Teacher)
-                .HasForeignKey(s => s.MSGV)
-                .OnDelete(DeleteBehavior.NoAction); 
+			modelBuilder.Entity<Teacher>()
+				.HasMany(t => t.Students)
+				.WithOne(s => s.Teacher)
+				.HasForeignKey(s => s.MSGV)
+				.OnDelete(DeleteBehavior.Restrict); 
 
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Student)
-                .WithMany(s => s.Reviews)
-                .HasForeignKey(r => r.MSSV);
+			modelBuilder.Entity<Student>()
+				.HasOne(s => s.Teacher)
+				.WithMany(t => t.Students)
+				.HasForeignKey(s => s.MSGV)
+				.OnDelete(DeleteBehavior.Restrict); 
+		}
 
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Teacher)
-                .WithMany(t => t.Reviews)
-                .HasForeignKey(r => r.MSGV);
-
-            modelBuilder.Entity<User>()
-                 .HasOne(u => u.Student)  
-                 .WithMany(s => s.Users)
-                 .HasForeignKey(u => u.idUser)
-                 .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Teacher)  
-                .WithMany(t => t.Users)
-                .HasForeignKey(u => u.idUser)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Manager)
-                .WithMany(t => t.Users)
-                .HasForeignKey(u => u.idUser)
-                .OnDelete(DeleteBehavior.NoAction);
-        }
-    }
-    }
+	}
+}

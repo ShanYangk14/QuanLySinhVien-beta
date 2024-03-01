@@ -12,8 +12,8 @@ using QuanLySinhVien.Data;
 namespace QuanLySinhVien.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    [Migration("20240301040845_NewMigration2")]
-    partial class NewMigration2
+    [Migration("20240301172421_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,35 +158,6 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Manager", b =>
-                {
-                    b.Property<int>("AdminId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AdminId"));
-
-                    b.Property<int>("MSGV")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MSSV")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentMSSV")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TeacherMSGV")
-                        .HasColumnType("int");
-
-                    b.HasKey("AdminId");
-
-                    b.HasIndex("StudentMSSV");
-
-                    b.HasIndex("TeacherMSGV");
-
-                    b.ToTable("Manager");
-                });
-
             modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
                 {
                     b.Property<int>("Id")
@@ -201,9 +172,6 @@ namespace QuanLySinhVien.Migrations
                     b.Property<int>("MSSV")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ManagerAdminId")
-                        .HasColumnType("int");
-
                     b.Property<int>("MaxScore")
                         .HasColumnType("int");
 
@@ -211,15 +179,19 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("StudentMSSV")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeacherMSGV")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("MSGV");
+                    b.HasIndex("StudentMSSV");
 
-                    b.HasIndex("MSSV");
+                    b.HasIndex("TeacherMSGV");
 
-                    b.HasIndex("ManagerAdminId");
-
-                    b.ToTable("Reviews");
+                    b.ToTable("review", (string)null);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
@@ -241,7 +213,7 @@ namespace QuanLySinhVien.Migrations
 
                     b.HasIndex("MSGV");
 
-                    b.ToTable("Students");
+                    b.ToTable("students", (string)null);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
@@ -262,13 +234,17 @@ namespace QuanLySinhVien.Migrations
                     b.Property<int>("Score")
                         .HasColumnType("int");
 
+                    b.Property<string>("TenSv")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("XepLoai")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MSGV");
 
-                    b.ToTable("Teachers");
+                    b.ToTable("teacher", (string)null);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
@@ -360,6 +336,8 @@ namespace QuanLySinhVien.Migrations
                         .HasColumnType("int")
                         .HasColumnOrder(1);
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idUser"));
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -370,9 +348,7 @@ namespace QuanLySinhVien.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("idUser");
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -426,42 +402,19 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Manager", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
                 {
                     b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("StudentMSSV")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("TeacherMSGV")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
-                {
-                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
-                        .WithMany("Reviews")
-                        .HasForeignKey("MSGV")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithMany("Reviews")
-                        .HasForeignKey("MSSV")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Manager", null)
-                        .WithMany("Reviews")
-                        .HasForeignKey("ManagerAdminId");
 
                     b.Navigation("Student");
 
@@ -473,51 +426,15 @@ namespace QuanLySinhVien.Migrations
                     b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
                         .WithMany("Students")
                         .HasForeignKey("MSGV")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
-                {
-                    b.HasOne("QuanLySinhVien.Models.Manager", "Manager")
-                        .WithMany("Users")
-                        .HasForeignKey("idUser")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
-                        .WithMany("Users")
-                        .HasForeignKey("idUser")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithMany("Users")
-                        .HasForeignKey("idUser")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Manager");
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("QuanLySinhVien.Models.Manager", b =>
-                {
-                    b.Navigation("Reviews");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
                 {
                     b.Navigation("Reviews");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
@@ -525,8 +442,6 @@ namespace QuanLySinhVien.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("Students");
-
-                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

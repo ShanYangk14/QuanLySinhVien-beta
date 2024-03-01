@@ -104,108 +104,99 @@ namespace QuanLySinhVien.Controllers
                 return View();
             }
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> RegisterAsync(User _user)
-        {
-            try
-            {
-                var check = _db.Users.FirstOrDefault(s => s.Email == _user.Email);
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<ActionResult> RegisterAsync(User _user)
+		{
+			try
+			{
+				var check = _db.Users.FirstOrDefault(s => s.Email == _user.Email);
 
-                if (check == null)
-                {
-                    _user.Password = GetMD5(_user.Password);
-
-
-                    _user.ResetToken = string.Empty;
-                    _user.ResetTokenExpiration = DateTime.UtcNow;
-                    _user.EmailConfirmationToken = Guid.NewGuid().ToString();
-
-                    _db.Users.Add(_user);
-                    _db.SaveChanges();
-
-                    var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
-                    var result = await _userManager.CreateAsync(user, _user.Password);
-
-                 
-                    if (result.Succeeded)
-                    {
-                        await _userManager.AddToRoleAsync(user, "Admin");
-                    }
-
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    ViewBag.error = "Email already exists";
-                    return View();
-                }
-            }
-            catch (Exception ex)
-            {
-
-                ViewBag.error = "An error occurred during registration.";
-                return View();
-            }
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(string email, string password)
-        {
-            if (ModelState.IsValid)
-            {
-                string hashedPassword = GetMD5(password);
-                var user = await _db.Users.FirstOrDefaultAsync(s => s.Email == email && s.Password == hashedPassword);
-
-                if (user != null)
-                {
-                    var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Email),
-            };
-
-                    if (await _userManager.IsInRoleAsync(user, "Admin"))
-                    {
-                        claims.Add(new Claim(ClaimTypes.Role, "Admin"));
-                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        var principal = new ClaimsPrincipal(identity);
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                        return RedirectToAction(nameof(Admin));
-                    }
-                    else if (await _userManager.IsInRoleAsync(user, "Teacher"))
-                    {
-                        claims.Add(new Claim(ClaimTypes.Role, "Teacher"));
-                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        var principal = new ClaimsPrincipal(identity);
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                        return RedirectToAction(nameof(Teacher));
-                    }
-                    else if (await _userManager.IsInRoleAsync(user, "Student"))
-                    {
-                        claims.Add(new Claim(ClaimTypes.Role, "Student"));
-                        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        var principal = new ClaimsPrincipal(identity);
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                        return RedirectToAction(nameof(Student));
-                    }
-                }
-                else
-                {
-                    ViewBag.error = "Login failed";
-                    return RedirectToAction(nameof(Login));
-                }
-            }
-
-            return View();
-        }
+				if (check == null)
+				{
+					_user.Password = GetMD5(_user.Password);
 
 
+					_user.ResetToken = string.Empty;
+					_user.ResetTokenExpiration = DateTime.UtcNow;
+					_user.EmailConfirmationToken = Guid.NewGuid().ToString();
 
-        public IActionResult InvalidToken()
+					_db.Users.Add(_user);
+					_db.SaveChanges();
+
+					var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
+					var result = await _userManager.CreateAsync(user, _user.Password);
+
+
+					if (result.Succeeded)
+					{
+						await _userManager.AddToRoleAsync(user, "Admin");
+					}
+
+					return RedirectToAction("Index");
+				}
+				else
+				{
+					ViewBag.error = "Email already exists";
+					return View();
+				}
+			}
+			catch (Exception ex)
+			{
+
+				ViewBag.error = "An error occurred during registration.";
+				return View();
+			}
+		}
+
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<ActionResult> Login(string email, string password)
+		{
+			if (ModelState.IsValid)
+			{
+				string hashedPassword = GetMD5(password);
+				var user = await _db.Users.FirstOrDefaultAsync(s => s.Email == email && s.Password == hashedPassword);
+
+				if (user != null)
+				{
+					var claims = new List<Claim>
+			{
+				new Claim(ClaimTypes.Name, user.Email),
+			};
+
+					if (await _userManager.IsInRoleAsync(user, "Admin"))
+					{
+						claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+						var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+						var principal = new ClaimsPrincipal(identity);
+						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+						return RedirectToAction(nameof(Admin));
+					}
+					else
+					{
+						claims.Add(new Claim(ClaimTypes.Role, "Student"));
+						var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+						var principal = new ClaimsPrincipal(identity);
+						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+						return RedirectToAction(nameof(Student));
+					}
+				}
+				else
+				{
+					ViewBag.error = "Login failed";
+					return RedirectToAction(nameof(Login));
+				}
+			}
+
+			return View();
+		}
+
+
+		public IActionResult InvalidToken()
         {
            
             return View();
@@ -370,6 +361,10 @@ namespace QuanLySinhVien.Controllers
             return View();
         }
 
+        public IActionResult Teacher()
+        {
+
+        }
 
         public IActionResult DisplayRoles()
         {

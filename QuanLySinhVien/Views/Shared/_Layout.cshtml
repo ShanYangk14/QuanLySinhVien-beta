@@ -30,7 +30,16 @@
                             if (User.IsInRole("Student"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Grade" asp-action="Scores">Grade</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Grade" asp-action="ScoreReview">Score Review</a>
+                                </li>
+                            }
+                        }
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            if (User.IsInRole("Teacher"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Grade" asp-action="StudentAssessment">Student Assessment</a>
                                 </li>
                             }
                         }

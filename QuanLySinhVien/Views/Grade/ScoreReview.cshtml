@@ -1,0 +1,41 @@
+﻿@model IEnumerable<QuanLySinhVien.Models.Student>
+
+@{
+    ViewData["Title"] = "ScoreReview";
+}
+
+<h1>ScoreReview</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.GvDanhGia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teacher)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.GvDanhGia)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Teacher.MSGV)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.MSSV">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.MSSV">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.MSSV">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

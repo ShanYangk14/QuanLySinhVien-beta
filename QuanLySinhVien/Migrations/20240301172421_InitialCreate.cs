@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace QuanLySinhVien.Migrations
 {
     /// <inheritdoc />
-    public partial class NewMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,64 +26,28 @@ namespace QuanLySinhVien.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Teachers",
+                name: "teacher",
                 columns: table => new
                 {
                     MSGV = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     GvDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NoiDungDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    TenSv = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NgayDanhGia = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    XepLoai = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Teachers", x => x.MSGV);
+                    table.PrimaryKey("PK_teacher", x => x.MSGV);
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
+                name: "users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    idUser = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Students",
-                columns: table => new
-                {
-                    MSSV = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    GvDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MSGV = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Students", x => x.MSSV);
-                    table.ForeignKey(
-                        name: "FK_Students_Teachers_MSGV",
-                        column: x => x.MSGV,
-                        principalTable: "Teachers",
-                        principalColumn: "MSGV");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetUsers",
-                columns: table => new
-                {
-                    idUser = table.Column<int>(type: "int", nullable: false),
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -110,48 +74,48 @@ namespace QuanLySinhVien.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetUsers_Students_idUser",
-                        column: x => x.idUser,
-                        principalTable: "Students",
-                        principalColumn: "MSSV");
-                    table.ForeignKey(
-                        name: "FK_AspNetUsers_Teachers_idUser",
-                        column: x => x.idUser,
-                        principalTable: "Teachers",
-                        principalColumn: "MSGV");
+                    table.PrimaryKey("PK_users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reviews",
+                name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NgayDanhGia = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    NoiDungDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MaxScore = table.Column<int>(type: "int", nullable: false),
-                    Score = table.Column<int>(type: "int", nullable: false),
-                    XepLoai = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MSSV = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "students",
+                columns: table => new
+                {
+                    MSSV = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    GvDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MSGV = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.PrimaryKey("PK_students", x => x.MSSV);
                     table.ForeignKey(
-                        name: "FK_Reviews_Students_MSSV",
-                        column: x => x.MSSV,
-                        principalTable: "Students",
-                        principalColumn: "MSSV",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Reviews_Teachers_MSGV",
+                        name: "FK_students_teacher_MSGV",
                         column: x => x.MSGV,
-                        principalTable: "Teachers",
+                        principalTable: "teacher",
                         principalColumn: "MSGV",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -168,9 +132,9 @@ namespace QuanLySinhVien.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
+                        name: "FK_AspNetUserClaims_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -188,9 +152,9 @@ namespace QuanLySinhVien.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
                     table.ForeignKey(
-                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
+                        name: "FK_AspNetUserLogins_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -212,9 +176,9 @@ namespace QuanLySinhVien.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
+                        name: "FK_AspNetUserRoles_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -232,10 +196,40 @@ namespace QuanLySinhVien.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
                     table.ForeignKey(
-                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        name: "FK_AspNetUserTokens_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "users",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "review",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NoiDungDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaxScore = table.Column<int>(type: "int", nullable: false),
+                    MSSV = table.Column<int>(type: "int", nullable: false),
+                    StudentMSSV = table.Column<int>(type: "int", nullable: false),
+                    MSGV = table.Column<int>(type: "int", nullable: false),
+                    TeacherMSGV = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_review", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_review_students_StudentMSSV",
+                        column: x => x.StudentMSSV,
+                        principalTable: "students",
+                        principalColumn: "MSSV",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_review_teacher_TeacherMSGV",
+                        column: x => x.TeacherMSGV,
+                        principalTable: "teacher",
+                        principalColumn: "MSGV",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -267,36 +261,31 @@ namespace QuanLySinhVien.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_review_StudentMSSV",
+                table: "review",
+                column: "StudentMSSV");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_review_TeacherMSGV",
+                table: "review",
+                column: "TeacherMSGV");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_students_MSGV",
+                table: "students",
+                column: "MSGV");
+
+            migrationBuilder.CreateIndex(
                 name: "EmailIndex",
-                table: "AspNetUsers",
+                table: "users",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_idUser",
-                table: "AspNetUsers",
-                column: "idUser");
-
-            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
-                table: "AspNetUsers",
+                table: "users",
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reviews_MSGV",
-                table: "Reviews",
-                column: "MSGV");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reviews_MSSV",
-                table: "Reviews",
-                column: "MSSV");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Students_MSGV",
-                table: "Students",
-                column: "MSGV");
         }
 
         /// <inheritdoc />
@@ -318,19 +307,19 @@ namespace QuanLySinhVien.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Reviews");
+                name: "review");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "users");
 
             migrationBuilder.DropTable(
-                name: "Students");
+                name: "students");
 
             migrationBuilder.DropTable(
-                name: "Teachers");
+                name: "teacher");
         }
     }
 }

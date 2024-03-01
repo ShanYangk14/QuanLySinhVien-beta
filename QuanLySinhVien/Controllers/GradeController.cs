@@ -20,7 +20,6 @@ namespace QuanLySinhVien.Controllers
             var students = await _context.Students
                 .Include(s => s.MSSV)
                 .Include(s => s.Reviews)
-                .Include(s => s.Users)
                 .Include(s => s.GvDanhGia)
                 .ToListAsync();
 
@@ -32,7 +31,6 @@ namespace QuanLySinhVien.Controllers
             var teacher = await _context.Teachers
                 .Include(t => t.MSGV)
                 .Include(t => t.Reviews)
-                .Include(t => t.Users)
                 .Include(t => t.GvDanhGia)
                 .ToListAsync();
 
