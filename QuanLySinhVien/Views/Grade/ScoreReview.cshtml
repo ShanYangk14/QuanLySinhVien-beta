@@ -22,20 +22,28 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.GvDanhGia)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Teacher.MSGV)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.MSSV">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.MSSV">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.MSSV">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model ?? Enumerable.Empty<QuanLySinhVien.Models.Student>())
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GvDanhGia)
+                </td>
+                <td>
+                    @if (item.Teacher != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Teacher.MSGV)
+                    }
+                    else
+                    {
+                        <text>No Teacher</text>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.MSSV">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.MSSV">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.MSSV">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

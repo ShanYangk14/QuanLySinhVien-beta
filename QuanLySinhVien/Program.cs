@@ -45,36 +45,53 @@ builder.Services.AddAuthorizationBuilder()
 
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
-    {
-        var userManager = services.GetRequiredService<UserManager<User>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+	var services = scope.ServiceProvider;
+	try
+	{
+		var userManager = services.GetRequiredService<UserManager<User>>();
+		var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        var adminRoleExists = await roleManager.RoleExistsAsync("Admin");
-        Console.WriteLine("Admin Role Exists: " + adminRoleExists);
-        if (!adminRoleExists)
-        {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
+		
+		var adminRoleExists = await roleManager.RoleExistsAsync("Admin");
+		Console.WriteLine("Admin Role Exists: " + adminRoleExists);
 
-        var adminUser = await userManager.FindByEmailAsync("nguyenminhquank14@siu.edu.vn");
-        if (adminUser == null)
-        {
-            adminUser = new User
-            {
-                UserName = "Nguyen Minh Quan",
-                Email = "nguyenminhquank14@siu.edu.vn",
-            };
-            await userManager.CreateAsync(adminUser, "ilovefemboy");
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-        }
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
-    }
+		if (!adminRoleExists)
+		{
+			
+			await roleManager.CreateAsync(new IdentityRole("Admin"));
+		}
+
+		
+		var teacherRoleExists = await roleManager.RoleExistsAsync("Teacher");
+		Console.WriteLine("Teacher Role Exists: " + teacherRoleExists);
+
+		if (!teacherRoleExists)
+		{
+			
+			await roleManager.CreateAsync(new IdentityRole("Teacher"));
+		}
+
+		
+		var adminUser = await userManager.FindByEmailAsync("nguyenminhquank14@siu.edu.vn");
+
+		if (adminUser == null)
+		{
+			
+			adminUser = new User
+			{
+				UserName = "Nguyen Minh Quan",
+				Email = "nguyenminhquank14@siu.edu.vn",
+			};
+
+			await userManager.CreateAsync(adminUser, "ilovefemboy");
+			await userManager.AddToRoleAsync(adminUser, "Admin");
+		}
+	}
+	catch (Exception ex)
+	{
+		var logger = services.GetRequiredService<ILogger<Program>>();
+		logger.LogError(ex, "An error occurred while seeding the database.");
+	}
 }
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

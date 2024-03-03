@@ -31,29 +31,33 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.GvDanhGia)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TenSv)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NgayDanhGia)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Score)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.XepLoai)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.MSGV">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.MSGV">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.MSGV">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model ?? Enumerable.Empty<QuanLySinhVien.Models.Teacher>())
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GvDanhGia)
+                    @Html.DisplayNameFor(model => model.TenSv)
+                    @Html.DisplayNameFor(model => model.NgayDanhGia)
+                    @Html.DisplayNameFor(model => model.Score)
+                    @Html.DisplayNameFor(model => model.XepLoai)
+                </td>
+                <td>
+                    @if (item.Students != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Students)
+                    }
+                    else
+                    {
+                        <text>No Student</text>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.MSGV">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.MSGV">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.MSGV">Delete</a>
+                </td>
+            </tr>
+        }
+
     </tbody>
 </table>

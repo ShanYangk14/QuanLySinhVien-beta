@@ -18,24 +18,22 @@ namespace QuanLySinhVien.Controllers
         public async Task<IActionResult> ScoreReview()
         {
             var students = await _context.Students
-                .Include(s => s.MSSV)
-                .Include(s => s.Reviews)
-                .Include(s => s.GvDanhGia)
-                .ToListAsync();
+				.Include(s => s.Teacher)  
+		        .Include(s => s.Reviews)
+		        .ToListAsync();
 
-            Console.WriteLine($"Access students Score Review");
-            return View();
+			Console.WriteLine($"Access students Score Review");
+            return View(students);
         }
         public async Task<IActionResult> StudentAssessment() 
         {
             var teacher = await _context.Teachers
-                .Include(t => t.MSGV)
-                .Include(t => t.Reviews)
-                .Include(t => t.GvDanhGia)
-                .ToListAsync();
+				 .Include(t => t.Students)  
+		         .Include(t => t.Reviews)
+		         .ToListAsync();
 
-            Console.WriteLine($"Access of students assessment");
-            return View();
+			Console.WriteLine($"Access of students assessment");
+            return View(teacher);
         }
     }
 }

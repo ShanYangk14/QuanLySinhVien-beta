@@ -130,6 +130,7 @@ namespace QuanLySinhVien.Controllers
 
 					if (result.Succeeded)
 					{
+						string role = _user.IsAdmin ? "Admin" : (_user.IsTeacher ? "Teacher" : "Student");
 						await _userManager.AddToRoleAsync(user, "Admin");
 					}
 
@@ -174,6 +175,15 @@ namespace QuanLySinhVien.Controllers
 						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
 						return RedirectToAction(nameof(Admin));
+					}
+					else if (await _userManager.IsInRoleAsync(user, "Teacher"))
+					{
+						claims.Add(new Claim(ClaimTypes.Role, "Teacher"));
+						var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+						var principal = new ClaimsPrincipal(identity);
+						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+						return RedirectToAction(nameof(Teacher));
 					}
 					else
 					{
@@ -361,10 +371,6 @@ namespace QuanLySinhVien.Controllers
             return View();
         }
 
-        public IActionResult Teacher()
-        {
-
-        }
 
         public IActionResult DisplayRoles()
         {
