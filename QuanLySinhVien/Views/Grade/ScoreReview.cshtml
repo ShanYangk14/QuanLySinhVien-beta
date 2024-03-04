@@ -18,6 +18,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.Teacher)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Reviews.FirstOrDefault().Score)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Reviews.FirstOrDefault().NoiDungDanhGia)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -36,6 +42,26 @@
                     else
                     {
                         <text>No Teacher</text>
+                    }
+                </td>
+                <td>
+                    @if (item.Reviews.Any())
+                    {
+                        @Html.DisplayFor(modelItem => item.Reviews.First().Score)
+                    }
+                    else
+                    {
+                        <text>No Score</text>
+                    }
+                </td>
+                <td>
+                    @if (item.Reviews.Any())
+                    {
+                        @Html.DisplayFor(modelItem => item.Reviews.First().NoiDungDanhGia)
+                    }
+                    else
+                    {
+                        <text>No Review</text>
                     }
                 </td>
                 <td>

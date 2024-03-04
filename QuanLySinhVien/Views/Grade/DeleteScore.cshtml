@@ -1,0 +1,19 @@
+﻿@model QuanLySinhVien.Models.Student
+
+@{
+    ViewData["Title"] = "Delete Score";
+}
+
+<h2>Delete Score for @Model.GvDanhGia</h2>
+
+<p>Are you sure you want to delete the score for @Model.GvDanhGia?</p>
+
+<div>
+    <form asp-action="ConfirmDeleteScore" method="post">
+        <input type="hidden" asp-for="MSSV" />
+        <div class="form-group">
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="ManageStudentScores">Cancel</a>
+        </div>
+    </form>
+</div>

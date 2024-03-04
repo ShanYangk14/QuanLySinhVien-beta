@@ -36,15 +36,22 @@
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.GvDanhGia)
-                    @Html.DisplayNameFor(model => model.TenSv)
-                    @Html.DisplayNameFor(model => model.NgayDanhGia)
-                    @Html.DisplayNameFor(model => model.Score)
-                    @Html.DisplayNameFor(model => model.XepLoai)
                 </td>
                 <td>
                     @if (item.Students != null)
                     {
-                        @Html.DisplayFor(modelItem => item.Students)
+                        <div>
+                            NoiDungDanhGia: @Html.DisplayFor(modelItem => item.Students.First().Reviews.First().NoiDungDanhGia)
+                        </div>
+                        <div>
+                            Score: @Html.DisplayFor(modelItem => item.Students.First().Reviews.First().MaxScore)
+                        </div>
+                        <div>
+                            Score: @Html.DisplayFor(modelItem => item.Students.First().Reviews.First().Score)
+                        </div>
+                        <div>
+                            XepLoai: @Html.DisplayFor(modelItem => item.Students.First().Reviews.First().XepLoai)
+                        </div>
                     }
                     else
                     {

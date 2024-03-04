@@ -38,6 +38,8 @@ namespace QuanLySinhVien.Models
 
         public int MSGV { get; set; }
         public Teacher Teacher { get; set; }
+        public int Score { get; set; }
+        public string XepLoai { get; set; }
     }
     public class Manager
     {

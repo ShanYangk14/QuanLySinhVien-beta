@@ -1,0 +1,37 @@
+﻿@model List<QuanLySinhVien.Models.Student>
+
+@{
+    ViewData["Title"] = "Manage Student Scores";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Manage Student Scores</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>Teacher ID</th>
+            <th>Score</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.MSSV</td>
+                <td>@student.MSGV</td>
+                <td>@student.Reviews.FirstOrDefault()?.Score</td>
+                <td>
+                    <a asp-action="EditScore" asp-route-studentId="@student.MSSV">Edit</a> |
+                    <a asp-action="DeleteScore" asp-route-studentId="@student.MSSV">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div>
+    <a asp-controller="Home" asp-action="Admin">Back to Admin</a>
+</div>
