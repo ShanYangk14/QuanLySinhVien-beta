@@ -22,7 +22,7 @@
             <tr>
                 <td>@student.MSSV</td>
                 <td>@student.MSGV</td>
-                <td>@student.Reviews.FirstOrDefault()?.Score</td>
+                <td>@student.Reviews</td>
                 <td>
                     <a asp-action="EditScore" asp-route-studentId="@student.MSSV">Edit</a> |
                     <a asp-action="DeleteScore" asp-route-studentId="@student.MSSV">Delete</a>

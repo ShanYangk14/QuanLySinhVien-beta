@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using NuGet.DependencyResolver;
 using NuGet.Protocol;
 using QuanLySinhVien.Data;
 using QuanLySinhVien.Models;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 
@@ -20,26 +22,32 @@ namespace QuanLySinhVien.Controllers
         {
             _context = context;
         }
+
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "StudentPolicy")]
         public async Task<IActionResult> ScoreReview()
         {
-            var students = await _context.Students
-				.Include(s => s.Teacher)  
-		        .Include(s => s.Reviews)
-		        .ToListAsync();
+            var student = await _context.Students
+                    .Include(s => s.Reviews)
+                    .Include(r => r.Teacher)
+                    .ToListAsync();
 
-			Console.WriteLine($"Access students Score Review");
-            return View(students);
+
+            Console.WriteLine($"Access of students assessment");
+            return View(student);
         }
-        public async Task<IActionResult> StudentAssessment() 
+
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "TeacherPolicy")]
+        public async Task<IActionResult> StudentAssessment()
         {
             var teacher = await _context.Teachers
-				 .Include(t => t.Students)  
-		         .Include(t => t.Reviews)
-		         .ToListAsync();
+                 .Include(t => t.Students)
+                 .Include(t => t.Reviews)
+                 .ToListAsync();
 
-			Console.WriteLine($"Access of students assessment");
+            Console.WriteLine($"Access of students assessment");
             return View(teacher);
         }
+
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "TeacherPolicy")]
         public async Task<IActionResult> EnterScore(int studentId)
         {
@@ -67,11 +75,18 @@ namespace QuanLySinhVien.Controllers
             {
                 return NotFound();
             }
+
             var review = student.Reviews.FirstOrDefault();
+
             if (review != null)
             {
-                review.Score = score;
-                await _context.SaveChangesAsync();
+                var teacher = review.Teacher;
+
+                if (teacher != null)
+                {
+                    teacher.Score = score;
+                    await _context.SaveChangesAsync();
+                }
             }
 
             return RedirectToAction("StudentAssessment");
@@ -120,13 +135,19 @@ namespace QuanLySinhVien.Controllers
                 var review = student.Reviews.FirstOrDefault();
                 if (review != null)
                 {
-                    review.Score = score;
-                    await _context.SaveChangesAsync();
+                    var teacher = review.Teacher;
+
+                    if (teacher != null)
+                    {
+                        teacher.Score = score;
+                        await _context.SaveChangesAsync();
+                    }
                 }
             }
 
             return RedirectToAction("ManageStudentScores");
         }
+
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
         public async Task<IActionResult> DeleteScore(int studentId)
         {

@@ -32,14 +32,9 @@ namespace QuanLySinhVien.Models
         [Key]
         public int Id { get; set; }
         public string NoiDungDanhGia { get; set; }
-        public int MaxScore { get; set; }
-        public int MSSV { get; set; }
         public Student Student { get; set; }
-
-        public int MSGV { get; set; }
+        public int MaxScore { get; set; } = 20;
         public Teacher Teacher { get; set; }
-        public int Score { get; set; }
-        public string XepLoai { get; set; }
     }
     public class Manager
     {

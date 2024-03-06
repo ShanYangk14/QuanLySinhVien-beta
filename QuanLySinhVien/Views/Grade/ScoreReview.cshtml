@@ -16,13 +16,16 @@
                 @Html.DisplayNameFor(model => model.GvDanhGia)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Teacher)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Reviews.FirstOrDefault().Score)
+                @Html.DisplayNameFor(model => model.Teacher.NgayDanhGia)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Reviews.FirstOrDefault().NoiDungDanhGia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teacher.Score)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Teacher.XepLoai)
             </th>
             <th></th>
         </tr>
@@ -45,13 +48,18 @@
                     }
                 </td>
                 <td>
-                    @if (item.Reviews.Any())
+                    @if (item.Teacher != null)
                     {
-                        @Html.DisplayFor(modelItem => item.Reviews.First().Score)
+                        @Html.DisplayFor(modelItem => item.Teacher.NgayDanhGia)
+                        @Html.DisplayFor(modelItem => item.Teacher.Score)
+                        @Html.DisplayFor(modelItem => item.Teacher.XepLoai)
+
                     }
                     else
                     {
+                        <text>khong co ngay danh gia</text>
                         <text>No Score</text>
+                        <text>khong co xep loai</text>
                     }
                 </td>
                 <td>
