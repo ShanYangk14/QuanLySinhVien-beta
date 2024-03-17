@@ -1,4 +1,4 @@
-using QuanLySinhVien.Models;
+﻿using QuanLySinhVien.Models;
 using System.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -21,12 +21,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<SchoolDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentity<User, IdentityRole>(options =>
+builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
 })
-       .AddEntityFrameworkStores<SchoolDbContext>()
-       .AddDefaultTokenProviders();
+.AddEntityFrameworkStores<SchoolDbContext>()
+.AddDefaultTokenProviders();
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
     o.TokenLifespan = TimeSpan.FromHours(1));
@@ -39,60 +40,9 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("StudentPolicy", policy => policy.RequireAuthenticatedUser())
+   .AddPolicy("StudentPolicy", policy => policy.RequireAuthenticatedUser())
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
     .AddPolicy("TeacherPolicy", policy => policy.RequireRole("Teacher"));
-
-using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-{
-	var services = scope.ServiceProvider;
-	try
-	{
-		var userManager = services.GetRequiredService<UserManager<User>>();
-		var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-		
-		var adminRoleExists = await roleManager.RoleExistsAsync("Admin");
-		Console.WriteLine("Admin Role Exists: " + adminRoleExists);
-
-		if (!adminRoleExists)
-		{
-			
-			await roleManager.CreateAsync(new IdentityRole("Admin"));
-		}
-
-		
-		var teacherRoleExists = await roleManager.RoleExistsAsync("Teacher");
-		Console.WriteLine("Teacher Role Exists: " + teacherRoleExists);
-
-		if (!teacherRoleExists)
-		{
-			
-			await roleManager.CreateAsync(new IdentityRole("Teacher"));
-		}
-
-		
-		var adminUser = await userManager.FindByEmailAsync("nguyenminhquank14@siu.edu.vn");
-
-		if (adminUser == null)
-		{
-			
-			adminUser = new User
-			{
-				UserName = "Nguyen Minh Quan",
-				Email = "nguyenminhquank14@siu.edu.vn",
-			};
-
-			await userManager.CreateAsync(adminUser, "ilovefemboy");
-			await userManager.AddToRoleAsync(adminUser, "Admin");
-		}
-	}
-	catch (Exception ex)
-	{
-		var logger = services.GetRequiredService<ILogger<Program>>();
-		logger.LogError(ex, "An error occurred while seeding the database.");
-	}
-}
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -105,6 +55,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

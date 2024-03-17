@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace QuanLySinhVien.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IdentityDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,8 @@ namespace QuanLySinhVien.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -26,38 +27,60 @@ namespace QuanLySinhVien.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "teacher",
+                name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    MSGV = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    GvDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TenSv = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NgayDanhGia = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Score = table.Column<int>(type: "int", nullable: false),
-                    XepLoai = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_teacher", x => x.MSGV);
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "roles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    rolename = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_roles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_roles_AspNetRoles_Id",
+                        column: x => x.Id,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "users",
                 columns: table => new
                 {
-                    idUser = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ResetToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ResetTokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsAdmin = table.Column<bool>(type: "bit", nullable: false),
-                    IsTeacher = table.Column<bool>(type: "bit", nullable: false),
                     EmailConfirmationToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: false),
+                    TeacherId = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -75,47 +98,11 @@ namespace QuanLySinhVien.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        name: "FK_users_roles_RoleId",
                         column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "students",
-                columns: table => new
-                {
-                    MSSV = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    GvDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MSGV = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_students", x => x.MSSV);
-                    table.ForeignKey(
-                        name: "FK_students_teacher_MSGV",
-                        column: x => x.MSGV,
-                        principalTable: "teacher",
-                        principalColumn: "MSGV",
-                        onDelete: ReferentialAction.Restrict);
+                        principalTable: "roles",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -124,7 +111,7 @@ namespace QuanLySinhVien.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -146,7 +133,7 @@ namespace QuanLySinhVien.Migrations
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -163,8 +150,8 @@ namespace QuanLySinhVien.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -187,7 +174,7 @@ namespace QuanLySinhVien.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -204,32 +191,91 @@ namespace QuanLySinhVien.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "review",
+                name: "teachers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NoiDungDanhGia = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MaxScore = table.Column<int>(type: "int", nullable: false),
-                    MSSV = table.Column<int>(type: "int", nullable: false),
-                    StudentMSSV = table.Column<int>(type: "int", nullable: false),
-                    MSGV = table.Column<int>(type: "int", nullable: false),
-                    TeacherMSGV = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_review", x => x.Id);
+                    table.PrimaryKey("PK_teachers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_review_students_StudentMSSV",
-                        column: x => x.StudentMSSV,
-                        principalTable: "students",
-                        principalColumn: "MSSV",
+                        name: "FK_teachers_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "classes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ClassName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ClassSize = table.Column<int>(type: "int", nullable: false),
+                    TeacherId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_classes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_classes_teachers_TeacherId",
+                        column: x => x.TeacherId,
+                        principalTable: "teachers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "students",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ClassId = table.Column<int>(type: "int", nullable: false),
+                    Major = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_students", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_students_classes_ClassId",
+                        column: x => x.ClassId,
+                        principalTable: "classes",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_review_teacher_TeacherMSGV",
-                        column: x => x.TeacherMSGV,
-                        principalTable: "teacher",
-                        principalColumn: "MSGV",
+                        name: "FK_students_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "grades",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Info = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaxGrade = table.Column<int>(type: "int", nullable: false),
+                    Grade = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_grades", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_grades_students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "students",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -261,24 +307,42 @@ namespace QuanLySinhVien.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_review_StudentMSSV",
-                table: "review",
-                column: "StudentMSSV");
+                name: "IX_classes_TeacherId",
+                table: "classes",
+                column: "TeacherId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_review_TeacherMSGV",
-                table: "review",
-                column: "TeacherMSGV");
+                name: "IX_grades_StudentId",
+                table: "grades",
+                column: "StudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_students_MSGV",
+                name: "IX_students_ClassId",
                 table: "students",
-                column: "MSGV");
+                column: "ClassId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_students_UserId",
+                table: "students",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_teachers_UserId",
+                table: "teachers",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 table: "users",
                 column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_users_RoleId",
+                table: "users",
+                column: "RoleId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -307,19 +371,25 @@ namespace QuanLySinhVien.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "review");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "users");
+                name: "grades");
 
             migrationBuilder.DropTable(
                 name: "students");
 
             migrationBuilder.DropTable(
-                name: "teacher");
+                name: "classes");
+
+            migrationBuilder.DropTable(
+                name: "teachers");
+
+            migrationBuilder.DropTable(
+                name: "users");
+
+            migrationBuilder.DropTable(
+                name: "roles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
         }
     }
 }

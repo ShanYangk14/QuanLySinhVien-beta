@@ -5,11 +5,11 @@ using System.Security.Claims;
 
 namespace QuanLySinhVien.Models
 {
-	public class User : IdentityUser
+	public class User : IdentityUser<int>
 	{
-		[Key, Column(Order = 1)]
+		[Key]
 		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public int idUser { get; set; }
+		public int Id {  get; set; }
 		[Required]
 		[StringLength(50, MinimumLength = 3)]
 		public string FirstName { get; set; }
@@ -35,8 +35,14 @@ namespace QuanLySinhVien.Models
 		}
 		public string ResetToken { get; set; }
 		public DateTime? ResetTokenExpiration { get; set; }
-		public bool IsAdmin { get; set; }
-		public bool IsTeacher { get; set; }
 		public string EmailConfirmationToken { get; set; }
+
+        [ForeignKey("RoleId")]
+        public Role Role { get; set; }
+
+        [ForeignKey("StudentId")]
+        public Student Student { get; set; }
+        [ForeignKey("TeacherId")]
+        public Teacher Teacher { get; set; }
 	}
 }

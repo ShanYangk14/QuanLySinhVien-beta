@@ -1,15 +1,15 @@
-﻿@model QuanLySinhVien.Models.User
-
+﻿@using System.Security.Claims
+@model QuanLySinhVien.Models.User
 
 @{
     ViewBag.Title = "Register";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+   
 }
+
 <div class="row justify-content-md-center">
     <div class="col-md-5">
         @using (Html.BeginForm("Register", "Home", FormMethod.Post))
         {
-            //@Html.ValidationSummary()
             @Html.AntiForgeryToken()
 
             <div class="card">
@@ -26,7 +26,6 @@
                         @Html.LabelFor(m => m.LastName)
                         @Html.TextBoxFor(m => m.LastName, "", new { @class = "form-control", @placeholder = "Last Name" })
                         @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "badge badge-danger" })
-
                     </div>
                     <div class="form-group">
                         @Html.LabelFor(m => m.Email)
@@ -44,16 +43,42 @@
                     </div>
                     <div class="form-group">
                         @Html.LabelFor(m => m.ConfirmPassword)
-                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", @placeholder = "Confim Password" })
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", @placeholder = "Confirm Password" })
                         @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "badge badge-danger" })
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            @Html.CheckBox("TeacherRole", false, new { @class = "mr-1" })
+                            Teacher
+                        </label>
+                        <label>
+                            @Html.CheckBox("StudentRole", false, new { @class = "mr-1" })
+                            Student
+                        </label>
                     </div>
                     <div class="form-group">
                         <input type="submit" name="submit" class="btn btn-danger" value="Register" />
                     </div>
                 </div>
             </div>
-
         }
     </div>
 </div>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('input[name="TeacherRole"]').change(function () {
+                if ($(this).prop('checked')) {
+                    $('input[name="StudentRole"]').prop('checked', false);
+                }
+            });
 
+            $('input[name="StudentRole"]').change(function () {
+                if ($(this).prop('checked')) {
+                    $('input[name="TeacherRole"]').prop('checked', false);
+                }
+            });
+        });
+    </script>
+}

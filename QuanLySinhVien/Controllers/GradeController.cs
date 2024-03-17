@@ -1,187 +1,88 @@
-﻿using Humanizer;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-using NuGet.DependencyResolver;
-using NuGet.Protocol;
 using QuanLySinhVien.Data;
 using QuanLySinhVien.Models;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Threading.Tasks;
-
 
 namespace QuanLySinhVien.Controllers
 {
     public class GradeController : Controller
     {
         private readonly SchoolDbContext _context;
-        public GradeController(SchoolDbContext context)
+        private readonly UserManager<User> _userManager;
+
+        public GradeController(SchoolDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "StudentPolicy")]
-        public async Task<IActionResult> ScoreReview()
+        // Action for teachers to view grades of students in their class
+        [HttpGet]
+        public async Task<IActionResult> ViewGradesForTeacher()
         {
-            var student = await _context.Students
-                    .Include(s => s.Reviews)
-                    .Include(r => r.Teacher)
-                    .ToListAsync();
+            var currentUser = await _context.Users
+                .Include(u => u.Teacher)
+                .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
-
-            Console.WriteLine($"Access of students assessment");
-            return View(student);
-        }
-
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "TeacherPolicy")]
-        public async Task<IActionResult> StudentAssessment()
-        {
-            var teacher = await _context.Teachers
-                 .Include(t => t.Students)
-                 .Include(t => t.Reviews)
-                 .ToListAsync();
-
-            Console.WriteLine($"Access of students assessment");
-            return View(teacher);
-        }
-
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "TeacherPolicy")]
-        public async Task<IActionResult> EnterScore(int studentId)
-        {
-            var student = await _context.Students
-                .Include(s => s.Reviews)
-                .FirstOrDefaultAsync(s => s.MSSV == studentId);
-
-            if (student == null)
+            if (currentUser == null || currentUser.Teacher == null)
             {
-                return NotFound();
+                return RedirectToAction("AccessDenied", "Home");
             }
 
-            return View(student);
+            var teacherClass = await _context.Classes
+                .Include(c => c.Students)
+                .ThenInclude(s => s.Grades)
+                .FirstOrDefaultAsync(c => c.TeacherId == currentUser.Teacher.Id);
+
+            return View(teacherClass);
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "TeacherPolicy")]
-        public async Task<IActionResult> EnterScore(int studentId, int score)
+        public async Task<IActionResult> PostGradeForStudent(int studentId, Grades grade)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(grade);
+            }
+
             var student = await _context.Students
-                .Include(s => s.Reviews)
-                .FirstOrDefaultAsync(s => s.MSSV == studentId);
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.Id == studentId);
 
             if (student == null)
             {
-                return NotFound();
+                return RedirectToAction("NotFound", "Error");
             }
 
-            var review = student.Reviews.FirstOrDefault();
-
-            if (review != null)
-            {
-                var teacher = review.Teacher;
-
-                if (teacher != null)
-                {
-                    teacher.Score = score;
-                    await _context.SaveChangesAsync();
-                }
-            }
-
-            return RedirectToAction("StudentAssessment");
-        }
-
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
-        public async Task<IActionResult> ManageStudentScores()
-        {
-            var students = await _context.Students
-                .Include(s => s.Reviews)
-                .ToListAsync();
-
-            return View("ManageStudentScores", students);
-        }
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
-        public async Task<IActionResult> EditScore(int studentId)
-        {
-            var student = await _context.Students
-                .Include(s => s.Reviews)
-                .FirstOrDefaultAsync(s => s.MSSV == studentId);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            return View(student);
-        }
-
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditScore(int studentId, int score)
-        {
-            var student = await _context.Students
-                .Include(s => s.Reviews)
-                .FirstOrDefaultAsync(s => s.MSSV == studentId);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            if (student.Reviews != null)
-            {
-                var review = student.Reviews.FirstOrDefault();
-                if (review != null)
-                {
-                    var teacher = review.Teacher;
-
-                    if (teacher != null)
-                    {
-                        teacher.Score = score;
-                        await _context.SaveChangesAsync();
-                    }
-                }
-            }
-
-            return RedirectToAction("ManageStudentScores");
-        }
-
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
-        public async Task<IActionResult> DeleteScore(int studentId)
-        {
-            var student = await _context.Students
-                .Include(s => s.Reviews)
-                .FirstOrDefaultAsync(s => s.MSSV == studentId);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            return View(student);
-        }
-
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]
-        [HttpPost, ActionName("DeleteScore")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmDeleteScore(int studentId)
-        {
-            var student = await _context.Students
-                .Include(s => s.Reviews)
-                .FirstOrDefaultAsync(s => s.MSSV == studentId);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            _context.Reviews.Remove(student.Reviews.FirstOrDefault());
+            grade.StudentId = studentId;
+            _context.Grades.Add(grade);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("ManageStudentScores");
+            return RedirectToAction("ViewOwnGrades");
         }
 
+        // Action for students to view their own grades
+        [HttpGet]
+        public async Task<IActionResult> ViewOwnGrades()
+        {
+            // Get the currently logged-in user
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            if (currentUser == null || currentUser.Student == null)
+            {
+                // Handle the case where the user is not a student
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
+            // Get the student's grades
+            var studentGrades = await _context.Grades
+                .Where(g => g.StudentId == currentUser.Student.Id)
+                .ToListAsync();
+
+            return View(studentGrades);
+        }
     }
 }

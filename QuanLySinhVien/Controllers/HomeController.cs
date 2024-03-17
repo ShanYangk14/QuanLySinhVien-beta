@@ -13,6 +13,7 @@ using QuanLySinhVien.Attributes;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net.Mail;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 
 namespace QuanLySinhVien.Controllers
 {
@@ -23,14 +24,16 @@ namespace QuanLySinhVien.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly SchoolDbContext _context;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
 
-        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager, SignInManager<User> signInManager, SchoolDbContext context)
+        public HomeController(ILogger<HomeController> logger, SchoolDbContext db, UserManager<User> userManager, SignInManager<User> signInManager, SchoolDbContext context, RoleManager<IdentityRole<int>> roleManager)
         {
             _logger = logger;
             _db = db;
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _roleManager = roleManager;
         }
 
         public ActionResult Index()
@@ -104,109 +107,117 @@ namespace QuanLySinhVien.Controllers
                 return View();
             }
         }
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<ActionResult> RegisterAsync(User _user)
-		{
-			try
-			{
-				var check = _db.Users.FirstOrDefault(s => s.Email == _user.Email);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RegisterAsync(User _user, bool TeacherRole, bool StudentRole)
+        {
+            try
+            {
+                var check = await _userManager.FindByEmailAsync(_user.Email);
 
-				if (check == null)
-				{
-					_user.Password = GetMD5(_user.Password);
+                if (check == null)
+                {
+                    var user = new User
+                    {
+                        FirstName = _user.FirstName,
+                        LastName = _user.LastName,
+                        Email = _user.Email,
+                        Password = GetMD5(_user.Password),
+                        ResetToken = string.Empty,
+                        ResetTokenExpiration = DateTime.UtcNow,
+                        EmailConfirmationToken = Guid.NewGuid().ToString(),
+                        SecurityStamp = Guid.NewGuid().ToString()
+                    };
+                    // Set the Role property based on selected checkboxes
+                    if (TeacherRole)
+                    {
+                        user.Role = new Role { rolename = "Teacher" };
+                    }
+                    if (StudentRole)
+                    {
+                        user.Role = new Role { rolename = "Student" };
+                    }
 
+                    _db.Users.Add(user);
+                    _db.SaveChanges();
 
-					_user.ResetToken = string.Empty;
-					_user.ResetTokenExpiration = DateTime.UtcNow;
-					_user.EmailConfirmationToken = Guid.NewGuid().ToString();
+                    // Assign roles based on the selected checkboxes
+                    if (user.Role != null)
+                    {
+                        await _userManager.AddToRoleAsync(user, user.Role.rolename);
+                    }
 
-					_db.Users.Add(_user);
-					_db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    ViewBag.error = "Email already exists";
+                }
 
-					var user = new User { FirstName = _user.FirstName, LastName = _user.LastName, Email = _user.Email };
-					var result = await _userManager.CreateAsync(user, _user.Password);
-
-
-					if (result.Succeeded)
-					{
-						string role = _user.IsAdmin ? "Admin" : (_user.IsTeacher ? "Teacher" : "Student");
-						await _userManager.AddToRoleAsync(user, "Admin");
-					}
-
-					return RedirectToAction("Index");
-				}
-				else
-				{
-					ViewBag.error = "Email already exists";
-					return View();
-				}
-			}
-			catch (Exception ex)
-			{
-
-				ViewBag.error = "An error occurred during registration.";
-				return View();
-			}
-		}
-
-
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<ActionResult> Login(string email, string password)
-		{
-			if (ModelState.IsValid)
-			{
-				string hashedPassword = GetMD5(password);
-				var user = await _db.Users.FirstOrDefaultAsync(s => s.Email == email && s.Password == hashedPassword);
-
-				if (user != null)
-				{
-					var claims = new List<Claim>
-			{
-				new Claim(ClaimTypes.Name, user.Email),
-			};
-
-					if (await _userManager.IsInRoleAsync(user, "Admin"))
-					{
-						claims.Add(new Claim(ClaimTypes.Role, "Admin"));
-						var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-						var principal = new ClaimsPrincipal(identity);
-						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-						return RedirectToAction(nameof(Admin));
-					}
-					else if (await _userManager.IsInRoleAsync(user, "Teacher"))
-					{
-						claims.Add(new Claim(ClaimTypes.Role, "Teacher"));
-						var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-						var principal = new ClaimsPrincipal(identity);
-						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-						return RedirectToAction(nameof(Teacher));
-					}
-					else
-					{
-						claims.Add(new Claim(ClaimTypes.Role, "Student"));
-						var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-						var principal = new ClaimsPrincipal(identity);
-						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-						return RedirectToAction(nameof(Student));
-					}
-				}
-				else
-				{
-					ViewBag.error = "Login failed";
-					return RedirectToAction(nameof(Login));
-				}
-			}
-
-			return View();
-		}
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred during registration.");
+                ViewBag.error = "An error occurred during registration.";
+                return View();
+            }
+        }
 
 
-		public IActionResult InvalidToken()
+        private string DetermineRoleForUser(User user)
+        {
+           
+            return user.Email.Contains("teacher", StringComparison.OrdinalIgnoreCase) ? "Teacher" : "Student";
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Login(string email, string password)
+        {
+            if (ModelState.IsValid)
+            {
+                string hashedPassword = GetMD5(password);
+                var user = await _db.Users.FirstOrDefaultAsync(s => s.Email == email && s.Password == hashedPassword);
+
+                if (user != null)
+                {
+                    var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+            };
+
+                    // Add custom role claim based on user's role
+                    string role = DetermineRoleForUser(user);
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+
+                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var principal = new ClaimsPrincipal(identity);
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                    // Redirect to appropriate action based on role
+                    if (role == "Teacher")
+                    {
+                        return RedirectToAction("Teacher");
+                    }
+                    else if (role == "Student")
+                    {
+                        return RedirectToAction("Student");
+                    }
+                    // Add other role checks if needed
+                }
+                else
+                {
+                    ViewBag.error = "Login failed";
+                    return RedirectToAction(nameof(Login));
+                }
+            }
+
+            return View();
+        }
+
+
+        public IActionResult InvalidToken()
         {
            
             return View();
@@ -221,7 +232,7 @@ namespace QuanLySinhVien.Controllers
             {
                 var user = await _userManager.FindByEmailAsync(email);
 
-                if (user != null && (await _userManager.IsInRoleAsync(user, "Admin") || user.IsAdmin))
+                if (user != null && (await _userManager.IsInRoleAsync(user, "Admin")))
                 {
                     var result = await _signInManager.PasswordSignInAsync(user, password, false, lockoutOnFailure: false);
 
@@ -314,6 +325,7 @@ namespace QuanLySinhVien.Controllers
 
             return RedirectToAction("InvalidToken");
         }
+
         [HttpPost]
         public IActionResult ResetPassword(ResetPasswordViewModel model)
         {
@@ -347,7 +359,6 @@ namespace QuanLySinhVien.Controllers
             {
                 return RedirectToAction("AccessDenied");
             }
-
         }
 
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme, Policy = "AdminPolicy")]

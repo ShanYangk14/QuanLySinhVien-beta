@@ -12,8 +12,8 @@ using QuanLySinhVien.Data;
 namespace QuanLySinhVien.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    [Migration("20240301181934_AddTeacherRole")]
-    partial class AddTeacherRole
+    [Migration("20240315085556_IdentityDb")]
+    partial class IdentityDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,10 +25,13 @@ namespace QuanLySinhVien.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -50,9 +53,11 @@ namespace QuanLySinhVien.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -66,9 +71,8 @@ namespace QuanLySinhVien.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -77,7 +81,7 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -91,9 +95,8 @@ namespace QuanLySinhVien.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -102,7 +105,7 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -113,9 +116,8 @@ namespace QuanLySinhVien.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -124,13 +126,13 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -139,10 +141,10 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -158,7 +160,7 @@ namespace QuanLySinhVien.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Class", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -166,91 +168,109 @@ namespace QuanLySinhVien.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("MSGV")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MSSV")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NoiDungDanhGia")
+                    b.Property<string>("ClassName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StudentMSSV")
+                    b.Property<int>("ClassSize")
                         .HasColumnType("int");
 
-                    b.Property<int>("TeacherMSGV")
+                    b.Property<int>("TeacherId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudentMSSV");
+                    b.HasIndex("TeacherId");
 
-                    b.HasIndex("TeacherMSGV");
+                    b.ToTable("classes", (string)null);
+                });
 
-                    b.ToTable("review", (string)null);
+            modelBuilder.Entity("QuanLySinhVien.Models.Grades", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Grade")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Info")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxGrade")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("grades", (string)null);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
                 {
-                    b.Property<int>("MSSV")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MSSV"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("GvDanhGia")
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Major")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MSGV")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("MSSV");
+                    b.HasKey("Id");
 
-                    b.HasIndex("MSGV");
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("students", (string)null);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
                 {
-                    b.Property<int>("MSGV")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MSGV"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("GvDanhGia")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("NgayDanhGia")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Score")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("TenSv")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("Id");
 
-                    b.Property<string>("XepLoai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
-                    b.HasKey("MSGV");
-
-                    b.ToTable("teacher", (string)null);
+                    b.ToTable("teachers", (string)null);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -275,12 +295,6 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsTeacher")
-                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -321,8 +335,17 @@ namespace QuanLySinhVien.Migrations
                     b.Property<DateTime?>("ResetTokenExpiration")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -330,13 +353,6 @@ namespace QuanLySinhVien.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<int>("idUser")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnOrder(1);
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idUser"));
 
                     b.HasKey("Id");
 
@@ -348,19 +364,33 @@ namespace QuanLySinhVien.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.HasIndex("RoleId")
+                        .IsUnique();
+
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Role", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole<int>");
+
+                    b.Property<string>("rolename")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("roles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("QuanLySinhVien.Models.User", null)
                         .WithMany()
@@ -369,7 +399,7 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.HasOne("QuanLySinhVien.Models.User", null)
                         .WithMany()
@@ -378,9 +408,9 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -393,7 +423,7 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
                     b.HasOne("QuanLySinhVien.Models.User", null)
                         .WithMany()
@@ -402,46 +432,106 @@ namespace QuanLySinhVien.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Review", b =>
+            modelBuilder.Entity("QuanLySinhVien.Models.Class", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
+                        .WithMany("Classes")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Grades", b =>
                 {
                     b.HasOne("QuanLySinhVien.Models.Student", "Student")
-                        .WithMany("Reviews")
-                        .HasForeignKey("StudentMSSV")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
-                        .WithMany("Reviews")
-                        .HasForeignKey("TeacherMSGV")
+                        .WithMany("Grades")
+                        .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Student");
-
-                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
                 {
-                    b.HasOne("QuanLySinhVien.Models.Teacher", "Teacher")
+                    b.HasOne("QuanLySinhVien.Models.Class", "Class")
                         .WithMany("Students")
-                        .HasForeignKey("MSGV")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Teacher");
-                });
+                    b.HasOne("QuanLySinhVien.Models.User", "User")
+                        .WithOne("Student")
+                        .HasForeignKey("QuanLySinhVien.Models.Student", "UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
-            modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
-                {
-                    b.Navigation("Reviews");
+                    b.Navigation("Class");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
                 {
-                    b.Navigation("Reviews");
+                    b.HasOne("QuanLySinhVien.Models.User", "User")
+                        .WithOne("Teacher")
+                        .HasForeignKey("QuanLySinhVien.Models.Teacher", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Models.Role", "Role")
+                        .WithOne("User")
+                        .HasForeignKey("QuanLySinhVien.Models.User", "RoleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Role", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                        .WithOne()
+                        .HasForeignKey("QuanLySinhVien.Models.Role", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Class", b =>
+                {
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Student", b =>
+                {
+                    b.Navigation("Grades");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Teacher", b =>
+                {
+                    b.Navigation("Classes");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.User", b =>
+                {
+                    b.Navigation("Student")
+                        .IsRequired();
+
+                    b.Navigation("Teacher")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Models.Role", b =>
+                {
+                    b.Navigation("User")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
